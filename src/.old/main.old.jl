@@ -1,5 +1,5 @@
 using QuantumSavory.CircuitZoo: EntanglementSwap
-include("network.jl")
+include("network.old.jl")
 
 Q = 1024
 PLOT = "FINAL"    # "OFF", "ON", "VERBOSE", "FINAL"
