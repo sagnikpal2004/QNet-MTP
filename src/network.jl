@@ -25,8 +25,11 @@ module QuantumNetwork
         Alice::QuantumSavory.Register
         Repeaters::Vector{Repeater}
         Bob::QuantumSavory.Register
+
+        ent_list::Dict{RegRef, RegRef}
     end
-    Network(n::Int, q::Int = Q) = Network(Alice(q), [Repeater(q) for i in 1:n], Bob(q))
+    Network(Alice::Register, Repeaters::Vector{Repeater}, Bob::Register) = Network(Alice, Repeaters, Bob, Dict{RegRef, RegRef}())
+    Network(n::Int, q::Int = Q) = Network(Alice(q), [Repeater(q) for i in 1:n-1], Bob(q))
 
 
     """Converts a Network into a QuantumSavory.RegiterNet"""
@@ -54,8 +57,10 @@ module QuantumNetwork
         coords::Vector{Point2f} = []
         push!(coords, Point2f(2, 1))
         for i in 1:n
+            # if N.Repeaters[i].isActive
             push!(coords, Point2f(10*i+1, 1))
             push!(coords, Point2f(10*i+2, 1))
+            # end
         end
         push!(coords, Point2f(10*(n+1)+1, 1))
         
@@ -75,8 +80,6 @@ module QuantumNetwork
     function initialize!(N::Network)
         q = length(N.Alice.traits)
 
-        println(typeof(N.Alice))
-
         for q in 1:q
             QuantumSavory.initialize!(N.Alice[q])
             for repeater in N.Repeaters
@@ -95,25 +98,56 @@ module QuantumNetwork
         for i in 1:q
             if p()
                 apply!([N.Alice[i], N.Repeaters[1].left[i]], CNOT)
+
+                N.ent_list[N.Alice[i]] = N.Repeaters[1].left[i]
+                N.ent_list[N.Repeaters[1].left[i]] = N.Alice[i]
             end
             for j in 1:n-1
                 if p()
                     apply!([N.Repeaters[j].right[i], N.Repeaters[j+1].left[i]], CNOT)
+
+                    N.ent_list[N.Repeaters[j].right[i]] = N.Repeaters[j+1].left[i]
+                    N.ent_list[N.Repeaters[j+1].left[i]] = N.Repeaters[j].right[i]
                 end
             end
             if p()
                 apply!([N.Repeaters[n].right[i], N.Bob[i]], CNOT)
+
+                N.ent_list[N.Repeaters[n].right[i]] = N.Bob[i]
+                N.ent_list[N.Bob[i]] = N.Repeaters[n].right[i]
             end
         end
     end
 
     """Performs entanglement swapping in a indexed repeater"""
     function ent_swap!(N::Network, r_idx::Int, p::Function=()->true)
-        n = length(N.Repeaters)
         q = length(N.Alice.traits)
 
         swapcircuit = QuantumSavory.CircuitZoo.EntanglementSwap()
 
-        error("not implemented")
+        ent_list_L = [(N.ent_list[N.Repeaters[r_idx].left[i]], N.Repeaters[r_idx].left[i]) for i in 1:q if N.Repeaters[r_idx].left[i] in keys(N.ent_list)]
+        ent_list_R = [(N.Repeaters[r_idx].right[i], N.ent_list[N.Repeaters[r_idx].right[i]]) for i in 1:q if N.Repeaters[r_idx].right[i] in keys(N.ent_list)]
+
+        for ((remoteL, localL), (localR, remoteR)) in zip(ent_list_L, ent_list_R)
+            if p()
+                swapcircuit(localL, remoteL, localR, remoteR)
+
+                N.ent_list[remoteL] = remoteR
+                N.ent_list[remoteR] = remoteL
+
+                delete!(N.ent_list, localL)
+                delete!(N.ent_list, localR)
+            end
+        end
+
+        # N.Repeaters[r_idx].isActive = false
+    end
+
+    """Performs entanglement swapping in all repeaters"""
+    function ent_swap!(N::Network, p::Function=()->true)
+        n = length(N.Repeaters)
+        q = length(N.Alice.traits)
+
+
     end
 end

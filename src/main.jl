@@ -1,7 +1,7 @@
 include("network.jl")
 using .QuantumNetwork
 
-N = 3; Q = 1024
+N = 4; Q = 1024
 function p(n_c=0.9, n=N)
     return rand() < (1/2) * n_c^2 * exp(-1 / (n+1))
 end
@@ -9,6 +9,11 @@ end
 net = QuantumNetwork.Network(N, Q)
 QuantumNetwork.initialize!(net)
 QuantumNetwork.entangle!(net, p)
+
+QuantumNetwork.ent_swap!(net, 1)
+QuantumNetwork.ent_swap!(net, 3)
+
+QuantumNetwork.ent_swap!(net, 2)
 
 QuantumNetwork.netplot(net)
 
