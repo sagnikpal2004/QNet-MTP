@@ -1,7 +1,11 @@
 module QuantumNetwork
     using QuantumSavory
     using CairoMakie
-    
+
+    using ResumableFunctions
+    using ConcurrentSim
+    TICK = 1
+
     Q = 1024
     N = 3
 
@@ -25,10 +29,7 @@ module QuantumNetwork
         Alice::QuantumSavory.Register
         Repeaters::Vector{Repeater}
         Bob::QuantumSavory.Register
-
-        ent_list::Dict{RegRef, RegRef}
     end
-    Network(Alice::Register, Repeaters::Vector{Repeater}, Bob::Register) = Network(Alice, Repeaters, Bob, Dict{RegRef, RegRef}())
     Network(n::Int, q::Int = Q) = Network(Alice(q), [Repeater(q) for i in 1:n-1], Bob(q))
 
 
@@ -70,14 +71,14 @@ module QuantumNetwork
         CairoMakie.hidespines!(ax)
         
         net = toRegisterNet(N)
-        QuantumSavory.registernetplot!(ax, net, registercoords=coords)
+        obs = QuantumSavory.registernetplot!(ax, net, registercoords=coords)
 
-        return fig
+        return fig, obs[1]
     end
 
 
     """Initializes all qubits in the Network"""
-    function initialize!(N::Network)
+    function initialize!(sim, N::Network)
         q = length(N.Alice.traits)
 
         for q in 1:q
@@ -88,66 +89,42 @@ module QuantumNetwork
             end
             QuantumSavory.initialize!(N.Bob[q])
         end
+        return timeout(sim, TICK)
     end
 
     """Entangles all qubits with their neighbors in the Network"""
-    function entangle!(N::Network, p::Function=()->true)
+    function entangle!(sim, N::Network, p::Function=()->true)
         n = length(N.Repeaters)
         q = length(N.Alice.traits)
 
         for i in 1:q
             if p()
                 apply!([N.Alice[i], N.Repeaters[1].left[i]], CNOT)
-
-                N.ent_list[N.Alice[i]] = N.Repeaters[1].left[i]
-                N.ent_list[N.Repeaters[1].left[i]] = N.Alice[i]
             end
             for j in 1:n-1
                 if p()
                     apply!([N.Repeaters[j].right[i], N.Repeaters[j+1].left[i]], CNOT)
-
-                    N.ent_list[N.Repeaters[j].right[i]] = N.Repeaters[j+1].left[i]
-                    N.ent_list[N.Repeaters[j+1].left[i]] = N.Repeaters[j].right[i]
                 end
             end
             if p()
                 apply!([N.Repeaters[n].right[i], N.Bob[i]], CNOT)
-
-                N.ent_list[N.Repeaters[n].right[i]] = N.Bob[i]
-                N.ent_list[N.Bob[i]] = N.Repeaters[n].right[i]
             end
         end
+        return timeout(sim, TICK)
     end
 
-    """Performs entanglement swapping in a indexed repeater"""
-    function ent_swap!(N::Network, r_idx::Int, p::Function=()->true)
-        q = length(N.Alice.traits)
+    function simulate!(N::Network)
+        reg_net = toRegisterNet(N)
+        sim = QuantumSavory.get_time_tracker(reg_net)
 
-        swapcircuit = QuantumSavory.CircuitZoo.EntanglementSwap()
+        initialize!(sim, N)
+        entangle!(sim, N)
 
-        ent_list_L = [(N.ent_list[N.Repeaters[r_idx].left[i]], N.Repeaters[r_idx].left[i]) for i in 1:q if N.Repeaters[r_idx].left[i] in keys(N.ent_list)]
-        ent_list_R = [(N.Repeaters[r_idx].right[i], N.ent_list[N.Repeaters[r_idx].right[i]]) for i in 1:q if N.Repeaters[r_idx].right[i] in keys(N.ent_list)]
-
-        for ((remoteL, localL), (localR, remoteR)) in zip(ent_list_L, ent_list_R)
-            if p()
-                swapcircuit(localL, remoteL, localR, remoteR)
-
-                N.ent_list[remoteL] = remoteR
-                N.ent_list[remoteR] = remoteL
-
-                delete!(N.ent_list, localL)
-                delete!(N.ent_list, localR)
-            end
+        fig, obs = netplot(N)
+        record(fig, "video.mp4", range(0, 10, step=1); framerate=10, visible=true) do t
+            run(sim, t)
+            ax.title = "t=$(t)"
+            notify(obs)
         end
-
-        # N.Repeaters[r_idx].isActive = false
-    end
-
-    """Performs entanglement swapping in all repeaters"""
-    function ent_swap!(N::Network, p::Function=()->true)
-        n = length(N.Repeaters)
-        q = length(N.Alice.traits)
-
-
     end
 end
