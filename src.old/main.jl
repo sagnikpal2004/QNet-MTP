@@ -1,13 +1,17 @@
 include("network.jl")
 using .QuantumNetwork
 
+using CSV
+using DataFrames
+
 N = 4; Q = 1024
 function p(n_c=0.9, l0=5, l_att=20)
     return rand() < (1/2) * n_c^2 * exp(-l0 / l_att)
 end
 
 
-fullData::Vector{Vector{Int}} = []
+# fullData::Vector{Vector{Int}} = []
+df = DataFrame(entangle = Int[], swap1 = Int[], swap2 = Int[])
 
 function simulateOnce()
     data::Vector{Int} = []
@@ -26,16 +30,15 @@ function simulateOnce()
 
 
     # QuantumNetwork.netplot(net)
-    push!(fullData, data)
+    push!(df, data)
 end
 
-for i in 1:10000
+for i in 1:10
     simulateOnce()
 end
 
-println(fullData)
-using CSV
-CSV.write("data.csv", fullData)
+CSV.write("data.csv", df)
+println(df)
 
 
 ## TODO:
