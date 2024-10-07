@@ -157,4 +157,14 @@ module QuantumNetwork
             error("Not implemented")
         end
     end
+
+    """Applies the DEJMPS protocol for distillation"""
+    function DEJMPS(memL::RegRef, ancL::RegRef, memR::RegRef, ancR::RegRef)
+        apply!([memL], )
+        apply!([ancL], )
+        apply!([memR], )
+        apply!([ancR], )
+
+        
+    end
 end
