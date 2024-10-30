@@ -4,6 +4,7 @@ module QuantumNetwork
     using QuantumInterface
     using QuantumOptics
     using LinearAlgebra
+    include("./noisyops/CircuitZoo.jl")
 
     basis1 = QuantumInterface.SpinBasis(1//2)
     basis2 = basis1 ⊗ basis1
@@ -23,47 +24,55 @@ module QuantumNetwork
         connectedTo_L::Union{Node, Nothing}
         connectedTo_R::Union{Node, Nothing}
 
-        function Node(qL::Union{Register, Nothing}, qR::Union{Register, Nothing})
-            if !isnothing(qL) && !isnothing(qR) && qL.traits != qR.traits
-                throw(ArgumentError("Register traits must match"))
-            end
+        function Node(type::Symbol, q::Int; T2::Float64=0.0)
+            # node_map = Dict(
+            #     :Alice => (nothing, QuantumSavory.Register(q, T2Dephasing(T2))),
+            #     :Repeater => (QuantumSavory.Register(q, T2Dephasing(T2)), QuantumSavory.Register(q, T2Dephasing(T2))),
+            #     :Bob => (QuantumSavory.Register(q, T2Dephasing(T2)), nothing)
+            # ) # TODO: Dephaser it turning the Ket into a density matrix
+            node_map = Dict(
+                :Alice => (nothing, QuantumSavory.Register(q)),
+                :Repeater => (QuantumSavory.Register(q), QuantumSavory.Register(q)),
+                :Bob => (QuantumSavory.Register(q), nothing),
+            )
 
+            if type ∉ keys(node_map)    throw(ArgumentError("Invalid node type"))       end
+            if q < 0                    throw(ArgumentError("q must be non-negative"))  end
+            if T2 < 0                   throw(ArgumentError("T2 must be non-negative")) end
+
+            (qL, qR) = node_map[type]
             new(qL, qR, true, nothing, nothing)
         end
     end
-    Alice(q::Int) = Node(nothing, Register(q))
-    Repeater(q::Int) = Node(Register(q), Register(q))
-    Bob(q::Int) = Node(Register(q), nothing)
-    Alice(q::Int, T2::Float64) = Node(nothing, Register(q, T2Dephasing(T2)))
-    Repeater(q::Int, T2::Float64) = Node(Register(q, T2Dephasing(T2)), Register(q, T2Dephasing(T2)))
-    Bob(q::Int, T2::Float64) = Node(Register(q, T2Dephasing(T2)), nothing)
+
 
     """Defines a Quantum Network with Alice & Bob and Repeaters in between"""
     struct Network
         nodes::Vector{Node}
         ent_list::Dict{RegRef, RegRef}
-    end
-    function Network(N::Int, q::Int)
-        nodes::Vector{Node} = []
 
-        push!(nodes, Alice(q))
-        for _ in 1:N
-            push!(nodes, Repeater(q))
+        p_ent::Float64
+        F::Float64
+        ϵ_g::Float64
+        ξ::Float64
+
+        function Network(N::Int64, q::Int64; T2::Float64=0.0, p_ent::Float64=1.0, F::Float64=1.0, ϵ_g::Float64=0.0, ξ::Float64=0.0)
+            if N < 0                    throw(ArgumentError("N must be non-negative"))      end
+            if q < 0                    throw(ArgumentError("q must be non-negative"))      end
+            if p_ent < 0 || p_ent > 1   throw(ArgumentError("p_ent must be in [0, 1]"))     end
+            if F < 0 || F > 1           throw(ArgumentError("Fidelity must be in [0, 1]"))  end
+            if ϵ_g < 0 || ϵ_g > 1       throw(ArgumentError("ϵ_g must be in [0, 1]"))       end
+            if ξ < 0 || ξ > 1           throw(ArgumentError("ξ must be in [0, 1]"))         end
+    
+            nodes = Vector{Node}()
+            push!(nodes, Node(:Alice, q; T2))
+            for _ in 1:N
+                push!(nodes, Node(:Repeater, q; T2))
+            end
+            push!(nodes, Node(:Bob, q; T2))
+        
+            new(nodes, Dict{RegRef, RegRef}(), p_ent, F, ϵ_g, ξ)
         end
-        push!(nodes, Bob(q))
-
-        Network(nodes, Dict{RegRef, RegRef}())
-    end
-    function Network(N::Int, q::Int, T2::Float64)
-        nodes::Vector{Node} = []
-
-        push!(nodes, Alice(q, T2))
-        for _ in 1:N
-            push!(nodes, Repeater(q, T2))
-        end
-        push!(nodes, Bob(q, T2))
-
-        Network(nodes, Dict{RegRef, RegRef}())
     end
 
     """Converts a Network into a QuantumSavory.RegiterNet"""
@@ -115,21 +124,16 @@ module QuantumNetwork
     end
 
     """Entangles two qubits in the Network"""
-    function entangle!(N::Network, q1::RegRef, q2::RegRef, F::Float64=1.0)
-        if F < 0 || F > 1
-            throw(ArgumentError("Fidelity must be between 0 and 1"))
-        end
-
-
+    function entangle!(N::Network, q1::RegRef, q2::RegRef)
         Φ⁺ = [1.0 + 0.0im, 0.0 + 0.0im, 0.0 + 0.0im, 1.0 + 0.0im] / sqrt(2)
         Φ⁻ = [1.0 + 0.0im, 0.0 + 0.0im, 0.0 + 0.0im, -1.0 + 0.0im] / sqrt(2)
         Ψ⁺ = [0.0 + 0.0im, 1.0 + 0.0im, 1.0 + 0.0im, 0.0 + 0.0im] / sqrt(2)
         Ψ⁻ = [0.0 + 0.0im, 1.0 + 0.0im, -1.0 + 0.0im, 0.0 + 0.0im] / sqrt(2)
 
         bellState = QuantumOptics.Ket(basis2, Φ⁺)
-        bellNoise = QuantumOptics.Ket(basis2, (Φ⁻ + Ψ⁺ + Ψ⁻) / sqrt(3))
+        bellNoise = QuantumOptics.Ket(basis2, (Φ⁻ + Ψ⁺ + Ψ⁻) / sqrt(3)) # TODO: make this more random
 
-        initState = sqrt(F) * bellState + sqrt(1-F) * bellNoise
+        initState = sqrt(N.F) * bellState + sqrt(1-N.F) * bellNoise
         QuantumSavory.initialize!([q1, q2], initState)
 
 
@@ -138,32 +142,32 @@ module QuantumNetwork
     end
 
     """Entangles two nodes in the Network"""
-    function entangle!(N::Network, nodeL::Node, nodeR::Node, F::Float64=1.0, p::Function=()->true)
+    function entangle!(N::Network, nodeL::Node, nodeR::Node)
         q = length(N.nodes[1].right.traits)
 
         for q in 1:q
-            if p()
-                QuantumNetwork.entangle!(N, nodeL.right[q], nodeR.left[q], F)
+            if rand() < N.p_ent
+                QuantumNetwork.entangle!(N, nodeL.right[q], nodeR.left[q])
             end
         end
 
         nodeL.connectedTo_R = nodeR
         nodeR.connectedTo_L = nodeL
     end
-    entangle!(N::Network, i::Int, j::Int, F::Float64=1.0, p::Function=()->true) = entangle!(N, N.nodes[i], N.nodes[j], F, p)
+    entangle!(N::Network, i::Int, j::Int) = entangle!(N, N.nodes[i], N.nodes[j])
 
     """Entangles all qubits with their neighbors in the Network"""
-    function entangle!(N::Network, F::Float64=1.0, p::Function=()->true)
+    function entangle!(N::Network)
         n = length(N.nodes)-2
 
         for i in 1:n+1
-            QuantumNetwork.entangle!(N, i, i+1, F, p)
+            QuantumNetwork.entangle!(N, i, i+1)
         end
     end
 
     """Performs an entanglement swap between two qubits in the Network"""
     function ent_swap!(N::Network, remoteL::RegRef, localL::RegRef, localR::RegRef, remoteR::RegRef)
-        swapcircuit = QuantumSavory.CircuitZoo.EntanglementSwap()
+        swapcircuit = EntanglementSwap_withnoise(N.ϵ_g, N.ξ)
 
         swapcircuit(localL, remoteL, localR, remoteR)
 
@@ -208,7 +212,7 @@ module QuantumNetwork
 
     """Applies DEJMPS protocol on two-qubit pairs"""
     function purify!(N::Network, memL::RegRef, memR::RegRef, ancL::RegRef, ancR::RegRef)
-        purificationcircuit = QuantumSavory.CircuitZoo.Purify2to1()
+        purificationcircuit = Purify2to1_withnoise(N.ϵ_g, N.ξ)
 
         success = purificationcircuit(memL, memR, ancL, ancR)
 
@@ -321,13 +325,10 @@ module QuantumNetwork
     end
 
     """Run the network simulation"""
-    function simulate!(N::Network;
-        F::Float64 = 1.0,
-        p_ent::Function = ()->true,
-    )
+    function simulate!(N::Network)
         curTime = 0.0
 
-        QuantumNetwork.entangle!(N, F, p_ent)
+        QuantumNetwork.entangle!(N)
         QuantumNetwork.ent_swap!(N)
     end
 end

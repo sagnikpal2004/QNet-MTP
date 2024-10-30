@@ -1,11 +1,11 @@
 include("./apply.jl")
 include("./traceout.jl")
 
-struct EntanglementSwap_withnoise <: QuantumSavory.CircuitZoo.AbsstractCircuit
+struct EntanglementSwap_withnoise <: QuantumSavory.CircuitZoo.AbstractCircuit
     ϵ_g::Float64
     ξ::Float64
 
-    function EntanglementSwap_withnoise(ϵ_g::Float64)
+    function EntanglementSwap_withnoise(ϵ_g::Float64, ξ::Float64)
         if ϵ_g < 0 || ϵ_g > 1
             throw(ArgumentError("ϵ_g must be in [0, 1]"))
         end
@@ -27,7 +27,7 @@ function (circuit::EntanglementSwap_withnoise)(localL, remoteL, localR, remoteR)
     end
     xmeas, zmeas
 end
-inputqubits(::EntanglementSwap) = 4
+inputqubits(::EntanglementSwap_withnoise) = 4
 
 
 struct Purify2to1_withnoise <: QuantumSavory.CircuitZoo.AbstractCircuit
@@ -35,7 +35,7 @@ struct Purify2to1_withnoise <: QuantumSavory.CircuitZoo.AbstractCircuit
     ϵ_g::Float64
     ξ::Float64
 
-    function Purify2to1_withnoise(leaveout::Symbol, ϵ_g::Float64)
+    function Purify2to1_withnoise(leaveout::Symbol, ϵ_g::Float64, ξ::Float64)
         if leaveout ∉ (:X, :Y, :Z)
             throw(ArgumentError(lazy"""
             `Purify2to1` can represent one of three purification circuits (see its docstring),
@@ -53,7 +53,7 @@ struct Purify2to1_withnoise <: QuantumSavory.CircuitZoo.AbstractCircuit
         end
     end
 end
-Purify2to1_withnoise(ϵ_g::Float64) = Purify2to1_withnoise(:X, ϵ_g)
+Purify2to1_withnoise(ϵ_g::Float64, ξ::Float64) = Purify2to1_withnoise(:X, ϵ_g, ξ)
 function (circuit::Purify2to1_withnoise)(purifiedL, purifiedR, sacrificedL, sacrificedR)
     gate, basis = if circuit.leaveout==:X
         CNOT, σˣ
@@ -73,4 +73,4 @@ function (circuit::Purify2to1_withnoise)(purifiedL, purifiedR, sacrificedL, sacr
     end
     success
 end
-inputqubits(circuit::Purify2to1) = 4
+inputqubits(circuit::Purify2to1_withnoise) = 4
