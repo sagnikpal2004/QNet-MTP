@@ -1,3 +1,5 @@
 [deps]
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
+QuantumInterface = "5717a53b-5d69-4fa3-b976-0bf2f97ca1e5"
+QuantumOptics = "6e0679c1-51ea-5a7c-ac74-d61b76210b0c"
 QuantumSavory = "2de2e421-972c-4cb5-a0c3-999c85908079"
