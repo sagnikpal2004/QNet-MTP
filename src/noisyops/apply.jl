@@ -17,8 +17,8 @@ function apply_withnoise!(regs::Vector{Register}, indices::Base.AbstractVecOrTup
     regs, max_time = QuantumSavory.apply!(regs, indices, operation; time)
 
     if rand() < ϵ_g
-        basis = regs[1].staterefs[1].state[].basis
-        regs[1].staterefs[1].state[] = noiseState(basis)
+        basis = regs[1].staterefs[indices[1]].state[].basis
+        regs[1].staterefs[indices[1]].state[] = noiseState(basis)
     end
 
     return regs, max_time

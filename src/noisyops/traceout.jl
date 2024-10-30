@@ -14,7 +14,7 @@ A basis object can be specified on its own as well, e.g.
 function project_traceout_withnoise!(r::RegRef, basis; time=nothing, ξ::Float64)
     result = project_traceout!(r, basis; time=time)
     if rand() < ξ
-        result = 1 - result
+        result = (result % 2) + 1
     end
     return result
 end

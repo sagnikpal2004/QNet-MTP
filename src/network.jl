@@ -321,6 +321,8 @@ module QuantumNetwork
         r_sec_list = [r_secure_XZ(getBellVector(q1.reg.staterefs[q1.idx].state[])) for (q1, q2) in N.ent_list]
         r_sec = sum(r_sec_list) / length(r_sec_list)
 
+        println("sum(r_sec_list)", sum(r_sec))
+
         return Y * r_sec
     end
 

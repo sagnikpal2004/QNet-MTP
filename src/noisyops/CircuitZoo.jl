@@ -16,7 +16,7 @@ struct EntanglementSwap_withnoise <: QuantumSavory.CircuitZoo.AbstractCircuit
     end
 end
 function (circuit::EntanglementSwap_withnoise)(localL, remoteL, localR, remoteR)
-    apply_withnoise!((localL, remoteL), QuantumSavory.CNOT; ϵ_g=circuit.ϵ_g)
+    apply_withnoise!((localL, localR), QuantumSavory.CNOT; ϵ_g=circuit.ϵ_g)
     xmeas = project_traceout_withnoise!(localL, σˣ; ξ=circuit.ξ)
     zmeas = project_traceout_withnoise!(localR, σᶻ; ξ=circuit.ξ)
     if xmeas==2
