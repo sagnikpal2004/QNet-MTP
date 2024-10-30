@@ -1,3 +1,8 @@
+"""Returns a random state in the given basis"""
+function noiseState(b::Basis)
+    return normalize(QuantumOptics.Ket(b, randn(Complex{Float64}, length(b))))
+end
+
 """
 Apply a given operation on the given set of register slots.
 
