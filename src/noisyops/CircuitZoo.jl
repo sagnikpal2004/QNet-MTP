@@ -20,10 +20,10 @@ function (circuit::EntanglementSwap_withnoise)(localL, remoteL, localR, remoteR)
     xmeas = project_traceout_withnoise!(localL, σˣ; ξ=circuit.ξ)
     zmeas = project_traceout_withnoise!(localR, σᶻ; ξ=circuit.ξ)
     if xmeas==2
-        apply_withnoise!(remoteL, Z; ϵ_g=circuit.ϵ_g)
+        apply!(remoteL, Z)
     end
     if zmeas==2
-        apply_withnoise!(remoteR, X; ϵ_g=circuit.ϵ_g)
+        apply!(remoteR, X)
     end
     xmeas, zmeas
 end
