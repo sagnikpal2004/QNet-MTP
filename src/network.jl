@@ -125,17 +125,22 @@ module QuantumNetwork
 
     """Entangles two qubits in the Network"""
     function entangle!(N::Network, q1::RegRef, q2::RegRef)
-        Φ⁺ = [1.0 + 0.0im, 0.0 + 0.0im, 0.0 + 0.0im, 1.0 + 0.0im] / sqrt(2)
-        Φ⁻ = [1.0 + 0.0im, 0.0 + 0.0im, 0.0 + 0.0im, -1.0 + 0.0im] / sqrt(2)
-        Ψ⁺ = [0.0 + 0.0im, 1.0 + 0.0im, 1.0 + 0.0im, 0.0 + 0.0im] / sqrt(2)
-        Ψ⁻ = [0.0 + 0.0im, 1.0 + 0.0im, -1.0 + 0.0im, 0.0 + 0.0im] / sqrt(2)
+        Φ⁺ = QuantumOptics.Ket(basis2, [1.0 + 0.0im, 0.0 + 0.0im, 0.0 + 0.0im, 1.0 + 0.0im] / sqrt(2))
+        Φ⁻ = QuantumOptics.Ket(basis2, [1.0 + 0.0im, 0.0 + 0.0im, 0.0 + 0.0im, -1.0 + 0.0im] / sqrt(2))
+        Ψ⁺ = QuantumOptics.Ket(basis2, [0.0 + 0.0im, 1.0 + 0.0im, 1.0 + 0.0im, 0.0 + 0.0im] / sqrt(2))
+        Ψ⁻ = QuantumOptics.Ket(basis2, [0.0 + 0.0im, 1.0 + 0.0im, -1.0 + 0.0im, 0.0 + 0.0im] / sqrt(2))
 
-        bellState = QuantumOptics.Ket(basis2, Φ⁺)
-        bellNoise = QuantumOptics.Ket(basis2, (Φ⁻ + Ψ⁺ + Ψ⁻) / sqrt(3)) # TODO: make this more random
-
-        initState = sqrt(N.F) * bellState + sqrt(1-N.F) * bellNoise
+        r = rand()
+        if r < N.F
+            initState = Φ⁺
+        elseif r < N.F + (1-N.F)/3
+            initState = Φ⁻
+        elseif r < N.F + 2*(1-N.F)/3
+            initState = Ψ⁺
+        else
+            initState = Ψ⁻
+        end
         QuantumSavory.initialize!([q1, q2], initState)
-
 
         N.ent_list[q1] = q2
         N.ent_list[q2] = q1
@@ -310,8 +315,11 @@ module QuantumNetwork
         function r_secure_XZ((_, b, c, d))
             Q_x = b + d
             Q_z = c + d
-            if Q_x == 0 && Q_z == 0
+            
+            if Q_x == 0 || Q_z == 0
                 return 1
+            elseif Q_x == 1 || Q_y == 1
+                return 0
             end
 
             h_x = (-Q_x * log2(Q_x)) - ((1 - Q_x) * log2(1 - Q_x))
