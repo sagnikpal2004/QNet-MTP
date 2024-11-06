@@ -4,7 +4,9 @@ module QuantumNetwork
     using QuantumInterface
     using QuantumOptics
     using LinearAlgebra
+
     include("./noisyops/CircuitZoo.jl")
+    include("./noisyops/bellStates.jl")
 
     basis1 = QuantumInterface.SpinBasis(1//2)
     basis2 = basis1 ⊗ basis1
@@ -125,11 +127,6 @@ module QuantumNetwork
 
     """Entangles two qubits in the Network"""
     function entangle!(N::Network, q1::RegRef, q2::RegRef)
-        Φ⁺ = QuantumOptics.Ket(basis2, [1.0 + 0.0im, 0.0 + 0.0im, 0.0 + 0.0im, 1.0 + 0.0im] / sqrt(2))
-        Φ⁻ = QuantumOptics.Ket(basis2, [1.0 + 0.0im, 0.0 + 0.0im, 0.0 + 0.0im, -1.0 + 0.0im] / sqrt(2))
-        Ψ⁺ = QuantumOptics.Ket(basis2, [0.0 + 0.0im, 1.0 + 0.0im, 1.0 + 0.0im, 0.0 + 0.0im] / sqrt(2))
-        Ψ⁻ = QuantumOptics.Ket(basis2, [0.0 + 0.0im, 1.0 + 0.0im, -1.0 + 0.0im, 0.0 + 0.0im] / sqrt(2))
-
         r = rand()
         if r < N.F
             initState = Φ⁺
