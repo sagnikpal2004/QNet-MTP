@@ -12,6 +12,7 @@ A basis object can be specified on its own as well, e.g.
 `project_traceout!(reg, slot, basis; ξ)`.
 """
 function project_traceout_withnoise!(r::RegRef, basis; time=nothing, ξ::Float64)
+    # error_count += 1
     result = project_traceout!(r, basis; time=time)
     if rand() < ξ
         result = (result % 2) + 1

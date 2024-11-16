@@ -17,8 +17,16 @@ struct EntanglementSwap_withnoise <: QuantumSavory.CircuitZoo.AbstractCircuit
 end
 function (circuit::EntanglementSwap_withnoise)(localL, remoteL, localR, remoteR)
     apply_withnoise!((localL, localR), QuantumSavory.CNOT; ϵ_g=circuit.ϵ_g)
+    println("HI1", remoteL.reg.staterefs[remoteL.idx].state[])
+    # println("HI2", localL.reg.staterefs[localL.idx].state[])
+    # println("HI3", localR.reg.staterefs[localR.idx].state[])
+    println("HI4", remoteR.reg.staterefs[remoteR.idx].state[])
     xmeas = project_traceout_withnoise!(localL, σˣ; ξ=circuit.ξ)
     zmeas = project_traceout_withnoise!(localR, σᶻ; ξ=circuit.ξ)
+    println("HI1", remoteL.reg.staterefs[remoteL.idx].state[])
+    # println("HI2", localL.reg.staterefs[localL.idx].state[])
+    # println("HI3", localR.reg.staterefs[localR.idx].state[])
+    println("HI4", remoteR.reg.staterefs[remoteR.idx].state[])
     if xmeas==2
         apply!(remoteL, Z)
     end

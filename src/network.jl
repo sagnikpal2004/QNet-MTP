@@ -1,20 +1,10 @@
 module QuantumNetwork
     using CairoMakie
     using QuantumSavory
-    using QuantumInterface
-    using QuantumOptics
     using LinearAlgebra
 
     include("./noisyops/CircuitZoo.jl")
-    include("./noisyops/bellStates.jl")
-
-    basis1 = QuantumInterface.SpinBasis(1//2)
-    basis2 = basis1 ⊗ basis1
-
-    zeroState = QuantumOptics.Ket(basis1, [1.0 + 0.0im, 0.0 + 0.0im])
-    oneState = QuantumOptics.Ket(basis1, [0.0 + 0.0im, 1.0 + 0.0im])
-    hadamardState = QuantumOptics.Ket(basis1, [1.0 + 0.0im, 1.0 + 0.0im] / sqrt(2))
-    bellState = QuantumOptics.Ket(basis2, [1.0 + 0.0im, 0.0 + 0.0im, 0.0 + 0.0im, 1.0 + 0.0im] / sqrt(2))
+    include("./bellStates.jl")
 
 
     """Defines a node in the Quantum Network"""
@@ -27,15 +17,10 @@ module QuantumNetwork
         connectedTo_R::Union{Node, Nothing}
 
         function Node(type::Symbol, q::Int; T2::Float64=0.0)
-            # node_map = Dict(
-            #     :Alice => (nothing, QuantumSavory.Register(q, T2Dephasing(T2))),
-            #     :Repeater => (QuantumSavory.Register(q, T2Dephasing(T2)), QuantumSavory.Register(q, T2Dephasing(T2))),
-            #     :Bob => (QuantumSavory.Register(q, T2Dephasing(T2)), nothing)
-            # ) # TODO: Dephaser it turning the Ket into a density matrix
             node_map = Dict(
-                :Alice => (nothing, QuantumSavory.Register(q)),
-                :Repeater => (QuantumSavory.Register(q), QuantumSavory.Register(q)),
-                :Bob => (QuantumSavory.Register(q), nothing),
+                :Alice => (nothing, QuantumSavory.Register(q, T2Dephasing(T2))),
+                :Repeater => (QuantumSavory.Register(q, T2Dephasing(T2)), QuantumSavory.Register(q, T2Dephasing(T2))),
+                :Bob => (QuantumSavory.Register(q, T2Dephasing(T2)), nothing),
             )
 
             if type ∉ keys(node_map)    throw(ArgumentError("Invalid node type"))       end
@@ -186,7 +171,9 @@ module QuantumNetwork
         ent_list_L = [(N.ent_list[node.left[q]], node.left[q]) for q in 1:q if node.left[q] in keys(N.ent_list)]
         ent_list_R = [(node.right[q], N.ent_list[node.right[q]]) for q in 1:q if node.right[q] in keys(N.ent_list)]
 
+        count = 0
         for ((remoteL, localL), (localR, remoteR)) in zip(ent_list_L, ent_list_R)
+            println(count); count += 1
             QuantumNetwork.ent_swap!(N, remoteL, localL, localR, remoteR)
         end
 
@@ -203,7 +190,9 @@ module QuantumNetwork
         for i in 1:log(2, n+1)
             for j in 1:n+1
                 if j % 2^i == (2^i)/2
+                    println("FUCK YOU", j+1)
                     QuantumNetwork.ent_swap!(N, j+1)
+                    QuantumNetwork.netplot(N)
                 end
             end
             if QuantumNetwork.getFidelity(N) < 0.95
@@ -273,7 +262,7 @@ module QuantumNetwork
 
     """Calculates Bell Pair fidelity of a certain state"""
     function getFidelity(state::Ket)
-        return abs2(LinearAlgebra.dot(bellState.data, state.data))
+        return abs2(LinearAlgebra.dot(Φ⁺.data, state.data))
     end
     
     """Calculates Network fidelity"""
@@ -336,6 +325,9 @@ module QuantumNetwork
         curTime = 0.0
 
         QuantumNetwork.entangle!(N)
+
+        QuantumNetwork.netplot(N)
+
         QuantumNetwork.ent_swap!(N)
     end
 end
