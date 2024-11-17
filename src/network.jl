@@ -4,7 +4,7 @@ module QuantumNetwork
     using LinearAlgebra
 
     include("./noisyops/CircuitZoo.jl")
-    include("./bellStates.jl")
+    include("./utils/bellStates.jl")
 
 
     """Defines a node in the Quantum Network"""
