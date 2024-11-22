@@ -57,6 +57,7 @@ end
 function getFidelity(q::QuantumSavory.RegRef)
     state = q.reg.staterefs[q.idx].state[]
 
-    isa(state, QuantumOptics.Ket) && state = QuantumOptics.dm(state)
-    return real(ϕ⁺' * state * ϕ⁺)
+    if isa(state, QuantumOptics.Ket)
+        return abs2(ϕ⁺' * state)
+    end; return real(ϕ⁺' * state * ϕ⁺)
 end
