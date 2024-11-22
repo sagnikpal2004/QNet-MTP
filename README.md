@@ -1,9 +1,4 @@
-# QuantumNetwork.jl
-
-## twoway-protocol
-### struct Repeater
-
-
-
 ## TODO
-- []
+
+## Talk about
+- permute systems after adding noise in apply

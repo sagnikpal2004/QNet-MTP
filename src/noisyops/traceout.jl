@@ -1,3 +1,5 @@
+import QuantumSavory
+
 """
 Perform a projective measurement on the given slot of the given register.
 with the given noise parameter ξ.
@@ -11,9 +13,8 @@ The Hilbert space of the register is automatically shrunk.
 A basis object can be specified on its own as well, e.g.
 `project_traceout!(reg, slot, basis; ξ)`.
 """
-function project_traceout_withnoise!(r::RegRef, basis; time=nothing, ξ::Float64)
-    # error_count += 1
-    result = project_traceout!(r, basis; time=time)
+function project_traceout!(r::QuantumSavory.RegRef, basis; time=nothing, ξ::Float64=0.0)
+    result = QuantumSavory.project_traceout!(r, basis; time=time)
     if rand() < ξ
         result = (result % 2) + 1
     end
