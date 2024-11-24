@@ -13,3 +13,26 @@ basis2 = QuantumOptics.:⊗(basis1, basis1)
 Φ⁻ = QuantumInterface.dm(ϕ⁻)
 Ψ⁺ = QuantumInterface.dm(ψ⁺)
 Ψ⁻ = QuantumInterface.dm(ψ⁻)
+
+struct BellState
+    a::Float64
+    b::Float64
+    c::Float64
+    d::Float64
+
+    function BellState(a::Float64, b::Float64, c::Float64, d::Float64)
+        @assert a + b + c + d ≈ 1.0 "State must be normalized"
+        return new(a, b, c, d)
+    end
+end
+function BellState(state::QuantumOptics.Operator)
+    @assert QuantumOptics.basis(state) == basis2 "State must be in basis2"
+
+    a = real(ϕ⁺' * state * ϕ⁺)
+    b = real(ϕ⁻' * state * ϕ⁻)
+    c = real(ψ⁺' * state * ψ⁺)
+    d = real(ψ⁻' * state * ψ⁻)
+    return BellState(a, b, c, d)
+end
+BellState(state::QuantumOptics.Ket) = BellState(QuantumInterface.dm(state))
+BellState(ref::QuantumSavory.RegRef) = BellState(ref.reg.staterefs[ref.idx].state[])
