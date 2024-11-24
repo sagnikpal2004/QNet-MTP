@@ -7,38 +7,40 @@ import QuantumInterface
 
 
 function noise(state::QuantumOptics.Operator, indices)
-    mixed_state = QuantumSymbolics.express(QuantumSavory.IdentityOp(basis(state)) / length(basis(state)))
+    mixed_state = QuantumSymbolics.express(QuantumSavory.IdentityOp(QuantumOptics.basis(state)) / length(QuantumOptics.basis(state)))
 
-    if !isa(basis(state), QuantumInterface.CompositeBasis)
+    if !isa(QuantumOptics.basis(state), QuantumInterface.CompositeBasis)
         return mixed_state
-    elseif length(indices) == length(basis(state).bases)
+    elseif length(indices) == length(QuantumOptics.basis(state).bases)
         return mixed_state
     else
-        mixed_basis = QuantumInterface.CompositeBasis(basis(state).bases[indices])
+        mixed_basis = QuantumInterface.CompositeBasis(QuantumOptics.basis(state).bases[indices])
         mixed_state = QuantumSymbolics.express(QuantumSavory.IdentityOp(mixed_basis) / length(mixed_basis))
         traced_state = QuantumOptics.ptrace(state, indices)
 
-        bit_order = vcat([i for i in 1:length(basis(state).bases) if !(i in indices)], indices)
+        bit_order = vcat([i for i in 1:length(QuantumOptics.basis(state).bases) if !(i in indices)], indices)
         perm = [findfirst(==(x), bit_order) for x in 1:length(bit_order)]
-        noisy_state = QuantumOptics.permutesystems(traced_state ⊗ mixed_state, perm)
+
+        perfect_state = QuantumOptics.:⊗(traced_state, mixed_state)
+        noisy_state = QuantumOptics.permutesystems(perfect_state, perm)
 
         return noisy_state
     end
 end
 
 function apply!(state::QuantumOptics.Operator, indices, operation::QuantumOptics.Operator; ϵ_g::Float64=0.0)
-    op = QuantumOpticsBase.is_apply_shortcircuit(state, indices, operation) ? operation : QuantumOptics.embed(basis(state), indices, operation)
+    op = QuantumOpticsBase.is_apply_shortcircuit(state, indices, operation) ? operation : QuantumOptics.embed(QuantumOptics.basis(state), indices, operation)
     state.data = ((1-ϵ_g)*(op*state*op') + ϵ_g*noise(state, indices)).data
     return state
 end
 function apply!(state::QuantumOptics.Ket, indices, operation::QuantumOptics.Operator; ϵ_g::Float64=0.0)
     ϵ_g > 0.0 && return apply!(QuantumOptics.dm(state), indices, operation; ϵ_g)
 
-    op = QuantumOpticsBase.is_apply_shortcircuit(state, indices, operation) ? operation : QuantumOptics.embed(basis(state), indices, operation)
+    op = QuantumOpticsBase.is_apply_shortcircuit(state, indices, operation) ? operation : QuantumOptics.embed(QuantumOptics.basis(state), indices, operation)
     state.data = (op*state).data
     return state
 end
-apply!(state::QuantumOptics.Ket, indices, operation::T; ϵ_g::Float64=0.0) where {T<:QuantumInterface.AbstractSuperOperator} = apply!(dm(state), indices, operation; ϵ_g)
+apply!(state::QuantumOptics.Ket, indices, operation::T; ϵ_g::Float64=0.0) where {T<:QuantumInterface.AbstractSuperOperator} = apply!(QuantumInterface.dm(state), indices, operation; ϵ_g)
 # function apply!(state::QuantumOptics.Operator, indices, operation::T; ϵ_g::Float64=0.0) where {T<:QuantumInterface.AbstractSuperOperator}
 #     if QuantumOpticsBase.is_apply_shortcircuit(state, indices, operation)
 #         state.data = (operation*state).data
