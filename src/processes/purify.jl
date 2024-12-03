@@ -25,6 +25,12 @@ function purify!(N::Network, nodeL::Node, nodeR::Node)
         (ancL, ancR) = popfirst!(ent_list)
         QuantumNetwork.purify!(N, memL, memR, ancL, ancR)
     end
+
+    if length(ent_list) == 1
+        (qL, qR) = ent_list[1]
+        QuantumSavory.traceout!(qL); delete!(N.ent_list, qL)
+        QuantumSavory.traceout!(qR); delete!(N.ent_list, qR)
+    end
 end
 purify!(N::Network, nodeL::Int, nodeR::Int) = purify!(N, N.nodes[nodeL], N.nodes[nodeR])
 
