@@ -16,13 +16,13 @@ struct EntanglementSwap <: QuantumSavory.CircuitZoo.AbstractCircuit
 end
 function (circuit::EntanglementSwap)(localL, remoteL, localR, remoteR)
     apply!((localL, localR), QuantumSavory.CNOT; ϵ_g=circuit.ϵ_g)
-    xmeas = project_traceout!(localL, σˣ; ξ=circuit.ξ)
-    zmeas = project_traceout!(localR, σᶻ; ξ=circuit.ξ)
+    xmeas = project_traceout!(localL, QuantumSavory.σˣ; ξ=circuit.ξ)
+    zmeas = project_traceout!(localR, QuantumSavory.σᶻ; ξ=circuit.ξ)
     if xmeas==2
-        QuantumSavory.apply!(remoteL, Z)
+        QuantumSavory.apply!(remoteL, QuantumSavory.Z)
     end
     if zmeas==2
-        QuantumSavory.apply!(remoteR, X)
+        QuantumSavory.apply!(remoteR, QuantumSavory.X)
     end
     return xmeas, zmeas
 end

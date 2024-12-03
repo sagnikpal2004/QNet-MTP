@@ -2,7 +2,7 @@ include("../noisyops/CircuitZoo.jl")
 
 """Applies DEJMPS protocol on two-qubit pairs"""
 function purify!(N::Network, memL::RegRef, memR::RegRef, ancL::RegRef, ancR::RegRef)
-    purificationcircuit = Purify2to1(N.ϵ_g, N.ξ)
+    purificationcircuit = Purify2to1(:Z, N.ϵ_g, N.ξ)
 
     success = purificationcircuit(memL, memR, ancL, ancR)
 

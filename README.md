@@ -1,4 +1,5 @@
-## TODO
+# QNet-MTP
 
-## Talk about
-- permute systems after adding noise in apply
+
+## TODO
+- Shree Raman Murli Dharan - Paper from 2016 - in appendix find DEJMPS and DEUR equation

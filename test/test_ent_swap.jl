@@ -36,16 +36,15 @@ function noisystate(F::Float64)
     return BellState(F, (1-F)/3, (1-F)/3, (1-F)/3)
 end
 
-F = 0.8
-s1 = noisystate(F)
-s2 = noisystate(F)
-ϵ_g = 0.1
-ξ = 0.2
+s1 = noisystate(0.93)
+s2 = noisystate(0.94)
+ϵ_g = 1.1e-3
+ξ = 1e-3
 
 p_pred = prediction(s1, s2; ϵ_g, ξ)
 p_exp = experimental(s1, s2; ϵ_g, ξ)
 
-println("Testing ent_swap with:   ϵ_g=", ϵ_g, ",   ξ=", ξ, ",   F=", F)
+println("Testing ent_swap with:   ϵ_g=", ϵ_g, ",   ξ=", ξ)
 println("Predicted state:    ", p_pred)
 println("Experimental state: ", p_exp)
 # println(p_pred ≈ p_exp)

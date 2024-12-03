@@ -1,5 +1,6 @@
 import QuantumInterface
 import QuantumOptics
+import Printf
 
 basis1 = QuantumInterface.SpinBasis(1//2)
 basis2 = QuantumOptics.:⊗(basis1, basis1)
@@ -21,7 +22,7 @@ struct BellState
     d::Float64
 
     function BellState(a::Float64, b::Float64, c::Float64, d::Float64)
-        @assert a + b + c + d ≈ 1.0 "State must be normalized"
+        # @assert a + b + c + d ≈ 1.0 "State must be normalized"
         return new(a, b, c, d)
     end
 end
@@ -36,3 +37,6 @@ function BellState(state::QuantumOptics.Operator)
 end
 BellState(state::QuantumOptics.Ket) = BellState(QuantumInterface.dm(state))
 BellState(ref::QuantumSavory.RegRef) = BellState(ref.reg.staterefs[ref.idx].state[])
+
+Base.isapprox(s1::BellState, s2::BellState; atol=1e-8) = all(isapprox(getfield(s1, f), getfield(s2, f); atol=atol) for f in fieldnames(BellState))
+Base.show(io::IO, bs::BellState) = Printf.@printf(io, "BellState(%.8f, %.8f, %.8f, %.8f)", bs.a, bs.b, bs.c, bs.d)

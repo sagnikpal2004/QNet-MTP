@@ -40,10 +40,12 @@ function ent_swap!(N::Network)
         for j in 1:n+1
             if j % 2^i == (2^i)/2
                 QuantumNetwork.ent_swap!(N, j+1)
+                # QuantumNetwork.tickTime!(N)
             end
         end
         if QuantumNetwork.getFidelity(N) < 0.95
             QuantumNetwork.purify!(N)
+            # QuantumNetwork.tickTime!(N)
         end
     end
 end

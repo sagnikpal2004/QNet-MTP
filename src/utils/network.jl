@@ -27,15 +27,15 @@ function netplot(N::Network)
     fig = CairoMakie.Figure()
     ax = CairoMakie.Axis(fig[1, 1])
     
-    coords::Vector{Point2f} = []
-    push!(coords, Point2f(2, 1))
+    coords::Vector{CairoMakie.Point2f} = []
+    push!(coords, CairoMakie.Point2f(2, 1))
     for i in 1:n
         if N.nodes[i+1].isActive
-            push!(coords, Point2f(10*i+1, 1))
-            push!(coords, Point2f(10*i+2, 1))
+            push!(coords, CairoMakie.Point2f(10*i+1, 1))
+            push!(coords, CairoMakie.Point2f(10*i+2, 1))
         end
     end
-    push!(coords, Point2f(10*(n+1)+1, 1))
+    push!(coords, CairoMakie.Point2f(10*(n+1)+1, 1))
     
     CairoMakie.xlims!(ax, 0, 10*(n+1)+2)
     CairoMakie.ylims!(ax, 0, q+1)
@@ -56,8 +56,20 @@ function getFidelity(N::Network)
 end
 function getFidelity(q::QuantumSavory.RegRef)
     state = q.reg.staterefs[q.idx].state[]
+    @assert basis(state) == basis2 "State must be in basis2"
 
     if isa(state, QuantumOptics.Ket)
         return abs2(ϕ⁺' * state)
     end; return real(ϕ⁺' * state * ϕ⁺)
+end
+
+"""Gets the communication times between two indexed nodes"""
+function getCommTime(N::Network, i::Int, j::Int)
+    @assert 1 <= i <= length(N.nodes) "i must be in [1, length(N.nodes)]"
+    @assert i <= j <= length(N.nodes) "j must be in [i, length(N.nodes)]"
+    
+    return sum(N.t_comms[i:j-1])
+end
+function getCommTime(N::Network, nodeL::Node, nodeR::Node)
+    return getCommTime(N, findfirst(N.nodes, nodeL), findfirst(N.nodes, nodeR))
 end

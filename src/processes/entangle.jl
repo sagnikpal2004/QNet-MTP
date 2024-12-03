@@ -42,4 +42,7 @@ function entangle!(N::Network)
     for i in 1:n+1
         QuantumNetwork.entangle!(N, i, i+1)
     end
+    if QuantumNetwork.getFidelity(N) < 0.95
+        QuantumNetwork.purify!(N)
+    end
 end
