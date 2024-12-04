@@ -25,6 +25,20 @@ function ent_swap!(N::Network, node::Node)
         QuantumNetwork.ent_swap!(N, remoteL, localL, localR, remoteR)
     end
 
+    len_diff = length(ent_list_L) - length(ent_list_R)
+    while len_diff > 0
+        (remoteL, localL) = pop!(ent_list_L)
+        traceout!(localL); delete!(N.ent_list, localL)
+        traceout!(remoteL); delete!(N.ent_list, remoteL)
+        len_diff -= 1
+    end
+    while len_diff < 0
+        (localR, remoteR) = pop!(ent_list_R)
+        traceout!(localR); delete!(N.ent_list, localR)
+        traceout!(remoteR); delete!(N.ent_list, remoteR)
+        len_diff += 1
+    end
+
     node.connectedTo_L.connectedTo_R = node.connectedTo_R
     node.connectedTo_R.connectedTo_L = node.connectedTo_L
     node.isActive = false
