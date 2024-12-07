@@ -1,5 +1,4 @@
 import QuantumSavory
-import Printf
 include("../src/utils/bellstates.jl")
 include("../src/noisyops/CircuitZoo.jl")
 
@@ -19,11 +18,11 @@ function prediction(s1::BellState, s2::BellState; ϵ_g::Float64=0.0, ξ::Float64
 end
 
 
-function experimental(s1::BellState, s2::BellState; leaveout, ϵ_g::Float64=0.0, ξ=0.0)
+function experimental(s1::BellState, s2::BellState; ϵ_g::Float64=0.0, ξ=0.0)
     ρ₁ = s1.a * Φ⁺ + s1.b * Φ⁻ + s1.c * Ψ⁺ + s1.d * Ψ⁻
     ρ₂ = s2.a * Φ⁺ + s2.b * Φ⁻ + s2.c * Ψ⁺ + s2.d * Ψ⁻
 
-    circuit = Purify2to1(leaveout, ϵ_g, ξ)
+    circuit = DEJMPSProtocol(ϵ_g, ξ)
 
     success_count = 0
     final_bellstate = nothing
@@ -49,18 +48,14 @@ function experimental(s1::BellState, s2::BellState; leaveout, ϵ_g::Float64=0.0,
 end
 
 
-function noisystate(F::Float64)
-    return BellState(F, (1-F)/3, (1-F)/3, (1-F)/3)
-end
-s1 = noisystate(0.94)
-s2 = noisystate(0.94)
-
-leaveout = :Z
-ϵ_g = 0.5e-3
-ξ = 2e-3
+s1 = BellState(0.78176288, 0.21669916, 0.00076898, 0.00076898)
+s2 = BellState(0.78176288, 0.21669916, 0.00076898, 0.00076898)
+ϵ_g = 1e-3
+ξ = 1e-3
 
 p_pred, s_pred = prediction(s1, s2; ϵ_g=ϵ_g, ξ=ξ)
-p_exp, s_exp = experimental(s1, s2; leaveout, ϵ_g=ϵ_g, ξ=ξ)
+p_exp, s_exp = experimental(s1, s2; ϵ_g=ϵ_g, ξ=ξ)
 
-println("   Predicted: ", s_pred, "   ",  p_pred)
+println("Testing purify with:   ϵ_g=", ϵ_g, ",   ξ=", ξ)
+println("Predicted:    ", s_pred, "   ",  p_pred)
 println("Experimental: ", s_exp, "   ", p_exp)

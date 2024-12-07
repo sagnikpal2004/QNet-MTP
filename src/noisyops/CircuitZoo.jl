@@ -1,6 +1,7 @@
 import QuantumSavory
 include("./apply.jl")
 include("./traceout.jl")
+include("../baseops/RGate.jl")
 
 
 struct EntanglementSwap <: QuantumSavory.CircuitZoo.AbstractCircuit
@@ -29,37 +30,70 @@ end
 inputqubits(::EntanglementSwap) = 4
 
 
-struct Purify2to1 <: QuantumSavory.CircuitZoo.AbstractCircuit
-    leaveout::Symbol
+# struct Purify2to1 <: QuantumSavory.CircuitZoo.AbstractCircuit
+#     leaveout::Symbol
+#     ϵ_g::Float64
+#     ξ::Float64
+
+#     function Purify2to1(leaveout::Symbol, ϵ_g::Float64, ξ::Float64)
+#         @assert leaveout ∈ (:X, :Y, :Z) "`leaveout` must be one of `:X`, `:Y`, or `:Z`"
+#         @assert 0 <= ϵ_g <= 1 "ϵ_g must be in [0, 1]"
+#         @assert 0 <= ξ <= 1 "ξ must be in [0, 1]"
+        
+#         new(leaveout, ϵ_g, ξ)
+#     end
+# end
+# Purify2to1(ϵ_g::Float64, ξ::Float64) = Purify2to1(:X, ϵ_g, ξ)
+# function (circuit::Purify2to1)(purifiedL, purifiedR, sacrificedL, sacrificedR)
+#     gate, basis = if circuit.leaveout==:X
+#         QuantumSavory.CNOT, QuantumSavory.σˣ
+#     elseif circuit.leaveout==:Z
+#         QuantumSavory.XCZ, QuantumSavory.σᶻ
+#     elseif circuit.leaveout==:Y
+#         QuantumSavory.ZCY, QuantumSavory.σʸ
+#     end
+#     apply!((sacrificedL, purifiedL), gate; ϵ_g=circuit.ϵ_g)
+#     apply!((sacrificedR, purifiedR), gate; ϵ_g=circuit.ϵ_g)
+#     measa = project_traceout!(sacrificedL, basis; ξ=circuit.ξ)
+#     measb = project_traceout!(sacrificedR, basis; ξ=circuit.ξ)
+#     success = measa == measb
+#     if !success
+#         QuantumSavory.traceout!(purifiedL)
+#         QuantumSavory.traceout!(purifiedR)
+#     end
+#     success
+# end
+# inputqubits(circuit::Purify2to1) = 4
+
+
+struct DEJMPSProtocol <: QuantumSavory.CircuitZoo.AbstractCircuit
     ϵ_g::Float64
     ξ::Float64
 
-    function Purify2to1(leaveout::Symbol, ϵ_g::Float64, ξ::Float64)
-        @assert leaveout ∈ (:X, :Y, :Z) "`leaveout` must be one of `:X`, `:Y`, or `:Z`"
-        @assert 0 <= ϵ_g <= 1 "ϵ_g must be in [0, 1]"
-        @assert 0 <= ξ <= 1 "ξ must be in [0, 1]"
-        
-        new(leaveout, ϵ_g, ξ)
+    function DEJMPSProtocol(ϵ_g::Float64, ξ::Float64)
+        @assert 0 <= ϵ_g <= 1   "ϵ_g must be in [0, 1]"
+        @assert 0 <=  ξ  <= 1   "ξ must be in [0, 1]"
+
+        new(ϵ_g, ξ)
     end
 end
-Purify2to1(ϵ_g::Float64, ξ::Float64) = Purify2to1(:X, ϵ_g, ξ)
-function (circuit::Purify2to1)(purifiedL, purifiedR, sacrificedL, sacrificedR)
-    gate, basis = if circuit.leaveout==:X
-        QuantumSavory.CNOT, QuantumSavory.σˣ
-    elseif circuit.leaveout==:Z
-        QuantumSavory.XCZ, QuantumSavory.σᶻ
-    elseif circuit.leaveout==:Y
-        QuantumSavory.ZCY, QuantumSavory.σʸ
-    end
-    apply!((sacrificedL, purifiedL), gate; ϵ_g=circuit.ϵ_g)
-    apply!((sacrificedR, purifiedR), gate; ϵ_g=circuit.ϵ_g)
-    measa = project_traceout!(sacrificedL, basis; ξ=circuit.ξ)
-    measb = project_traceout!(sacrificedR, basis; ξ=circuit.ξ)
+function (circuit::DEJMPSProtocol)(purifiedL, purifiedR, sacrificedL, sacrificedR)
+    QuantumSavory.apply!(purifiedL, Rx(π/2))
+    QuantumSavory.apply!(sacrificedL, Rx(π/2))
+    QuantumSavory.apply!(purifiedR, Rx(-π/2))
+    QuantumSavory.apply!(sacrificedR, Rx(-π/2))
+
+    apply!([purifiedL, sacrificedL], QuantumSavory.CNOT; ϵ_g=circuit.ϵ_g)
+    apply!([purifiedR, sacrificedR], QuantumSavory.CNOT; ϵ_g=circuit.ϵ_g)
+
+    measa = project_traceout!(sacrificedL, QuantumSavory.σᶻ; ξ=circuit.ξ)
+    measb = project_traceout!(sacrificedR, QuantumSavory.σᶻ; ξ=circuit.ξ)
+
     success = measa == measb
     if !success
         QuantumSavory.traceout!(purifiedL)
         QuantumSavory.traceout!(purifiedR)
     end
-    success
+    return success
 end
-inputqubits(circuit::Purify2to1) = 4
+inputqubits(::DEJMPSProtocol) = 4

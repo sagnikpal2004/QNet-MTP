@@ -22,7 +22,7 @@ struct BellState
     d::Float64
 
     function BellState(a::Float64, b::Float64, c::Float64, d::Float64)
-        # @assert a + b + c + d ≈ 1.0 "State must be normalized"
+        @assert isapprox(a+b+c+d, 1.0; atol=1e-3) "State must be normalized"
         return new(a, b, c, d)
     end
 end
@@ -40,3 +40,7 @@ BellState(ref::QuantumSavory.RegRef) = BellState(ref.reg.staterefs[ref.idx].stat
 
 Base.isapprox(s1::BellState, s2::BellState; atol=1e-8) = all(isapprox(getfield(s1, f), getfield(s2, f); atol=atol) for f in fieldnames(BellState))
 Base.show(io::IO, bs::BellState) = Printf.@printf(io, "BellState(%.8f, %.8f, %.8f, %.8f)", bs.a, bs.b, bs.c, bs.d)
+
+function noisybell(F::Float64)
+    return BellState(F, (1-F)/3, (1-F)/3, (1-F)/3)
+end
