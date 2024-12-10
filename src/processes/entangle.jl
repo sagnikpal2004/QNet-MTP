@@ -1,4 +1,4 @@
-using QuantumSavory
+import QuantumSavory
 include("../utils/bellstates.jl")
 
 

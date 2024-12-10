@@ -1,4 +1,4 @@
-using QuantumSavory
+import QuantumSavory
 
 
 """Updates the time of a register"""

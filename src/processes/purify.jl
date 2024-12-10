@@ -2,9 +2,7 @@ include("../noisyops/CircuitZoo.jl")
 
 """Applies DEJMPS protocol on two-qubit pairs"""
 function purify!(N::Network, memL::RegRef, memR::RegRef, ancL::RegRef, ancR::RegRef)
-    purificationcircuit = DEJMPSProtocol(N.ϵ_g, N.ξ)
-
-    success = purificationcircuit(memL, memR, ancL, ancR)
+    success = DEJMPSProtocol(N.ϵ_g, N.ξ)(memL, memR, ancL, ancR)
 
     delete!(N.ent_list, ancL)
     delete!(N.ent_list, ancR)
@@ -41,4 +39,5 @@ function purify!(N::Network)
             QuantumNetwork.purify!(N, node, node.connectedTo_R)
         end
     end
+    uptotime!(N, ) # TODO
 end
