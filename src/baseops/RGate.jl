@@ -1,5 +1,6 @@
 import QuantumOptics
 import QuantumInterface
+import QuantumSymbolics
 import QuantumSymbolics: Metadata
 
 QuantumSymbolics.@withmetadata struct RGate <: QuantumSymbolics.AbstractSingleQubitGate

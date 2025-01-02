@@ -21,8 +21,8 @@ end
 
 """Returns a figure representing the current state of the Network"""
 function netplot(N::Network)
-    n = length(N.nodes)-2
-    q = length(N.nodes[1].right.traits)
+    n = N.param.n
+    q = N.param.q
     
     fig = CairoMakie.Figure()
     ax = CairoMakie.Axis(fig[1, 1])
@@ -63,13 +63,46 @@ function getFidelity(q::QuantumSavory.RegRef)
     end; return real(ϕ⁺' * state * ϕ⁺)
 end
 
+
 """Gets the communication times between two indexed nodes"""
 function getCommTime(N::Network, i::Int, j::Int)
     @assert 1 <= i <= length(N.nodes) "i must be in [1, length(N.nodes)]"
     @assert i <= j <= length(N.nodes) "j must be in [i, length(N.nodes)]"
     
-    return sum(N.t_comms[i:j-1])
+    return sum(N.param.t_comms[i:j-1])
 end
-function getCommTime(N::Network, nodeL::Node, nodeR::Node)
-    return getCommTime(N, findfirst(N.nodes, nodeL), findfirst(N.nodes, nodeR))
+getCommTime(N::Network, nodeL::Node, nodeR::Node) = getCommTime(N, findfirst(x->x==nodeL, N.nodes), findfirst(x->x==nodeR, N.nodes))
+
+function tickTime!(N::Network, t::Float64)
+    N.curTime += t
+    uptotime!(N, N.curTime)
 end
+
+
+function getQBER(N::Network)
+    Q_x_lst::Vector{Float64} = []
+    Q_z_lst::Vector{Float64} = []
+
+    for (q1, q2) in N.ent_list
+        ρ = BellState(q1)
+        push!(Q_x_lst, ρ.b + ρ.d)
+        push!(Q_z_lst, ρ.c + ρ.d)
+    end
+
+    Q_x = sum(Q_x_lst) / length(Q_x_lst)
+    Q_z = sum(Q_z_lst) / length(Q_z_lst)
+    return Q_x, Q_z
+end
+
+function r_secure(Q_x::Float64, Q_y::Float64)
+    # @assert N.nodes[1].connectedTo_R == N.nodes[end] "Alice must be connected to Bob"
+    @assert 0 <= Q_x <= 1 "Q_x must be in [0, 1]"
+    @assert 0 <= Q_y <= 1 "Q_y must be in [0, 1]"
+    
+    h_x = (-Q_x * log2(Q_x)) - ((1 - Q_x) * log2(1 - Q_x)); h_x = isnan(h_x) ? 0 : h_x
+    h_y = (-Q_y * log2(Q_y)) - ((1 - Q_y) * log2(1 - Q_y)); h_y = isnan(h_y) ? 0 : h_y
+    return max(1 - h_x - h_y, 0)
+end
+r_secure(N::Network) = r_secure(getQBER(N)...)
+r_secure(ρ::BellState) = r_secure(ρ.b + ρ.d, ρ.c + ρ.d)
+r_secure(ρ::QuantumSavory.RegRef) = r_secure(BellState(ρ))

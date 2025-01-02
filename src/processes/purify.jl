@@ -1,8 +1,9 @@
+using QuantumSavory
 include("../noisyops/CircuitZoo.jl")
 
 """Applies DEJMPS protocol on two-qubit pairs"""
 function purify!(N::Network, memL::RegRef, memR::RegRef, ancL::RegRef, ancR::RegRef)
-    success = DEJMPSProtocol(N.ϵ_g, N.ξ)(memL, memR, ancL, ancR)
+    success = DEJMPSProtocol(N.param.ϵ_g, N.param.ξ)(memL, memR, ancL, ancR)
 
     delete!(N.ent_list, ancL)
     delete!(N.ent_list, ancR)
@@ -14,7 +15,7 @@ end
 
 """Performs DEJMPS protocol between two nodes"""
 function purify!(N::Network, nodeL::Node, nodeR::Node)
-    q = length(N.nodes[1].right.traits)
+    q = N.param.q
 
     ent_list = [(nodeL.right[q], N.ent_list[nodeL.right[q]]) for q in 1:q if nodeL.right[q] in keys(N.ent_list) && N.ent_list[nodeL.right[q]].reg == nodeR.left]
 
@@ -34,10 +35,15 @@ purify!(N::Network, nodeL::Int, nodeR::Int) = purify!(N, N.nodes[nodeL], N.nodes
 
 """Performs DEJMPS protocol network-wide"""
 function purify!(N::Network)
+    times::Vector{Float64} = []
     for node in N.nodes
         if !isnothing(node.connectedTo_R)
             QuantumNetwork.purify!(N, node, node.connectedTo_R)
+            push!(times, getCommTime(N, node, node.connectedTo_R))
         end
     end
-    uptotime!(N, ) # TODO
+    tickTime!(N, maximum(times))
+
+    @info "Purified with fidelity $(QuantumNetwork.getFidelity(N))"
+    if Main.PLOT display(netplot(N)) end
 end
