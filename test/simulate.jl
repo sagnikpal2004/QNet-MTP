@@ -1,7 +1,7 @@
 import Random
 Random.seed!(22)
 
-import Logging
+using Logging
 global_logger(NullLogger())
 
 include("../src/network.jl")
@@ -43,7 +43,7 @@ for l0 in l0_values
 
         println("l0: $l0, n: $n, E_Y: $E_Y, SKR: $SKR")
         push!(results_df, (l0, n, E_Y, SKR))
-        CSV.write("results.csv", results_df)
+        CSV.write("./results/results.csv", results_df)
     end
 end
 
