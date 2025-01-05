@@ -1,5 +1,5 @@
 import QuantumSavory
-include("../src/utils/bellstates.jl")
+include("../src/utils/bellStates.jl")
 include("../src/noisyops/CircuitZoo.jl")
 
 

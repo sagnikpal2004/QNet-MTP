@@ -1,5 +1,5 @@
 import QuantumSavory
-include("../utils/bellstates.jl")
+include("../utils/bellStates.jl")
 
 
 """Returns a noisy state with fidelity F"""

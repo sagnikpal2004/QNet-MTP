@@ -1,5 +1,5 @@
 import QuantumSavory
-include("../src/utils/bellstates.jl")
+include("../src/utils/bellStates.jl")
 include("../src/noisyops/CircuitZoo.jl")
 
 function prediction(s1::BellState, s2::BellState; ϵ_g::Float64=0.0, ξ=0.0)

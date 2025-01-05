@@ -80,7 +80,7 @@ module QuantumNetwork
     end
 
 
-    include("./utils/bellstates.jl")
+    include("./utils/bellStates.jl")
     include("./baseops/uptotime.jl")
     include("./utils/network.jl")
     
