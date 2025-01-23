@@ -107,17 +107,17 @@ module QuantumNetwork
         Q_x = sum(Q_x_lst) / length(Q_x_lst)
         Q_y = sum(Q_y_lst) / length(Q_y_lst)
 
-        SKR = E_Y * r_secure(Q_x, Q_y) / M
+        SKR = NaN # E_Y * r_secure(Q_x, Q_y) / M
         return E_Y, SKR
     end
 
     function simulate!(N::Network)
-        @info "Simulating with $(N.param)"
+        @debug "Simulating with $(N.param)"
 
         QuantumNetwork.entangle!(N)
         QuantumNetwork.ent_swap!(N)
         
-        @info ""
+        @debug ""
         y = length(N.ent_list) / 2
         Q_x, Q_y = QuantumNetwork.getQBER(N)
         return y, (Q_x, Q_y)

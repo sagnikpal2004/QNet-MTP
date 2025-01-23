@@ -7,8 +7,8 @@ global_logger(ConsoleLogger(stdout, Logging.Info))
 include("../src/network.jl")
 import .QuantumNetwork
 
-n = 1024   # Number of segments
-q = 128    # Number of qubits
+n = 1   # Number of segments
+q = 256    # Number of qubits
 
 T2 = 0.01   # T2 dephasing time in seconds
 

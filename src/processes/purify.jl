@@ -44,6 +44,6 @@ function purify!(N::Network)
     end
     tickTime!(N, maximum(times))
 
-    @info "Purified with fidelity $(QuantumNetwork.getFidelity(N))"
+    @debug "Purified with fidelity $(QuantumNetwork.getFidelity(N))"
     if Main.PLOT display(netplot(N)) end
 end
