@@ -33,8 +33,13 @@ function purify!(N::Network, nodeL::Node, nodeR::Node)
 end
 purify!(N::Network, nodeL::Int, nodeR::Int) = purify!(N, N.nodes[nodeL], N.nodes[nodeR])
 
+PURIFIED = false
+
 """Performs DEJMPS protocol network-wide"""
 function purify!(N::Network)
+    global PURIFIED
+    if PURIFIED return end
+
     times::Vector{Float64} = []
     for node in N.nodes
         if !isnothing(node.connectedTo_R)
@@ -46,4 +51,6 @@ function purify!(N::Network)
 
     @debug "Purified with fidelity $(QuantumNetwork.getFidelity(N))"
     if Main.PLOT display(netplot(N)) end
+
+    PURIFIED = true
 end
