@@ -42,7 +42,7 @@ function entangle!(N::Network)
     for i in 1:n+1
         QuantumNetwork.entangle!(N, i, i+1)
     end
-    @debug "Entangled with fidelity $(QuantumNetwork.getFidelity(N))"
+    @info "Entangled with fidelity $(QuantumNetwork.getFidelity(N))"
     if Main.PLOT display(netplot(N)) end
 
     if Main.PURIFY && QuantumNetwork.getFidelity(N) < 0.95

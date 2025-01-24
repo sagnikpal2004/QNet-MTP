@@ -1,19 +1,19 @@
-import Random
-Random.seed!(22)
+# import Random
+# Random.seed!(22)
 
-using Logging
-global_logger(ConsoleLogger(stdout, Logging.Info))
+# using Logging
+# global_logger(ConsoleLogger(stdout, Logging.Debug))
 
 include("../src/network.jl")
 import .QuantumNetwork
 
-n = 1   # Number of segments
-q = 256    # Number of qubits
+n = 128   # Number of segments
+q = 1024    # Number of qubits
 
-T2 = 0.01   # T2 dephasing time in seconds
+T2 = 1.0   # T2 dephasing time in seconds
 
 n_c = 0.9
-l0 = 1000         # Internode distance in metres
+l0 = 10 * 1000         # Internode distance in metres
 L = l0 * n        # Fibre transmission efficiency
 l_att = 20000     # Attenuation length in metres
 p_ent = 0.5 * n_c^2 * exp(-l0/l_att)   # Entanglement generation probability
@@ -29,9 +29,9 @@ t_comms = fill(l0 / c, n)  # Inter-node communication times
 # y, fidelity = QuantumNetwork.simulate!(net)
 # println(QuantumNetwork.getFidelity(net))
 
-PLOT = true
-PURIFY = false
+PLOT = false
+PURIFY = true
 
 net_param = QuantumNetwork.NetworkParam(n-1, q; T2, F, p_ent, ϵ_g, ξ, t_comms)
 E_Y, SKR = QuantumNetwork.simulate(net_param, 1)
-println(E_Y)
+println(SKR)

@@ -54,7 +54,7 @@ function ent_swap!(N::Network)
                 QuantumNetwork.ent_swap!(N, j+1)
             end
         end
-        @debug "Entanglement swapped class $(Int(i)) with fidelity $(QuantumNetwork.getFidelity(N))"
+        @info "Entanglement swapped class $(Int(i)) with fidelity $(QuantumNetwork.getFidelity(N))"
         if Main.PLOT display(netplot(N)) end
 
         if Main.PURIFY && QuantumNetwork.getFidelity(N) < 0.95 && i != log(2, n+1)
