@@ -93,7 +93,7 @@ module QuantumNetwork
         Q_x_lst = Vector{Float64}(undef, shots)
         Q_y_lst = Vector{Float64}(undef, shots)
 
-        @threads for i in 1:shots
+        Threads.@threads for i in 1:shots
             N = Network(p.n, p.q; p.T2, p.F, p.p_ent, p.ϵ_g, p.ξ, p.t_comms)
             y, (Q_x, Q_y) = simulate!(N)
 
