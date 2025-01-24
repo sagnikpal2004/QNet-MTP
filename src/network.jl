@@ -89,23 +89,23 @@ module QuantumNetwork
     include("./processes/ent_swap.jl")
 
     function simulate(p::NetworkParam, shots::Int64)
-        Y::Vector{Int64} = []
-        Q_x_lst::Vector{Float64} = []
-        Q_y_lst::Vector{Float64} = []
+        Y = Vector{Int64}(undef, shots)
+        Q_x_lst = Vector{Float64}(undef, shots)
+        Q_y_lst = Vector{Float64}(undef, shots)
 
-        for _ in 1:shots
+        @threads for i in 1:shots
             N = Network(p.n, p.q; p.T2, p.F, p.p_ent, p.ϵ_g, p.ξ, p.t_comms)
             y, (Q_x, Q_y) = simulate!(N)
 
-            push!(Y, y)
-            push!(Q_x_lst, Q_x)
-            push!(Q_y_lst, Q_y)
+            Y[i] = y
+            Q_x_lst[i] = Q_x
+            Q_y_lst[i] = Q_y
         end
 
         M = p.q
-        E_Y = sum(Y) / length(Y)
-        Q_x = sum(Q_x_lst) / length(Q_x_lst)
-        Q_y = sum(Q_y_lst) / length(Q_y_lst)
+        E_Y = sum(Y) / shots
+        Q_x = sum(Q_x_lst) / shots
+        Q_y = sum(Q_y_lst) / shots
 
         SKR = E_Y * r_secure(Q_x, Q_y) / M
         return E_Y, SKR
