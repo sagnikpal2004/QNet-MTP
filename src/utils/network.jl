@@ -80,6 +80,10 @@ end
 
 
 function getQBER(N::Network)
+    if length(N.ent_list) == 0
+        return 1.0, 1.0
+    end
+
     Q_x_lst::Vector{Float64} = []
     Q_z_lst::Vector{Float64} = []
 
