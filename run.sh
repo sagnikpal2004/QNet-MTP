@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH -c 16
-#SBATCH --mem=8192
+#SBATCH -c 128
+#SBATCH --mem=24576
 #SBATCH --mail-type=ALL
 #SBATCH -t 24:00:00
 
