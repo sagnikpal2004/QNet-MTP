@@ -1,50 +1,68 @@
+using Pkg
+
+import QuantumNetwork
+
 import Random
 Random.seed!(22)
 
 using Logging
-# global_logger(NullLogger())
-global_logger(ConsoleLogger(stdout, Logging.Info))
-
-include("../src/network.jl")
-import .QuantumNetwork
+global_logger(NullLogger())
+# global_logger(ConsoleLogger(stdout, Logging.Info))
 
 using DataFrames
 using CSV
 
-l0_values = [10000^i for i in 1:0.25:4]
-n_values = [2^i for i in 1:1:7]
+
+L_values = [10^i * 1000 for i in 1:0.25:4]
+n_values = [2^i for i in 1:1:9]
+n_c_values = [1.0, 0.9, 0.5, 0.3]
+ϵ_g_values = [0.0001, 0.001]
 
 q = 1024
+T2 = 1.0
 
-T2 = 0.01
-
-n_c = 0.9
 l_att = 20000
-
-ϵ_g = 1e-3
-ξ = ϵ_g/4        
-F = 1-(5/4)*(ϵ_g)
-
 c = 2e8
 
 PLOT = false
 PURIFY = true
 
-results_df = DataFrame(l0 = Int[], n = Int[], E_Y = Float64[], SKR = Float64[])
+# Check if the file exists
+if isfile("./results/results3.csv")
+    results_df = CSV.read("./results/results3.csv", DataFrame)
+else
+    # Create a new DataFrame if the file does not exist
+    results_df = DataFrame(L = Float64[], n = Int[], n_c = Float64[], ϵ_g = Float64[], E_Y = Float64[], SKR = Float64[])
+    CSV.write("./results/results3.csv", results_df)
+end
 
-for l0 in l0_values
-    p_ent = 0.5 * n_c^2 * exp(-l0/l_att)
+for n_c in n_c_values
+    for ϵ_g in ϵ_g_values
+        for n in n_values
+            for L in L_values
+                if any(row -> row.L == L && row.n == n && row.n_c == n_c && row.ϵ_g == ϵ_g, eachrow(results_df))
+                    continue
+                end
 
-    for n in n_values
-        L = l0 * n
-        t_comms = fill(l0 / c, n)
+                if ϵ_g == 0.001 && n > 129
+                    continue
+                end
+                
+                l0 = L / n
+                p_ent = 0.5 * n_c^2 * exp(-l0/l_att)
+                t_comms = fill(l0 / c, n)
+                ξ = ϵ_g/4        
+                F = 1-(5/4)*(ϵ_g)
 
-        net_param = QuantumNetwork.NetworkParam(n-1, q; T2, F, p_ent, ϵ_g, ξ, t_comms)
-        E_Y, SKR = QuantumNetwork.simulate(net_param, 1)
+                net_param = QuantumNetwork.NetworkParam(n-1, q; T2, F, p_ent, ϵ_g, ξ, t_comms)
+                E_Y, SKR = QuantumNetwork.simulate(net_param, 100)
 
-        println("l0: $l0, n: $n, E_Y: $E_Y, SKR: $SKR")
-        push!(results_df, (l0, n, E_Y, SKR))
-        CSV.write("./results/results3.csv", results_df)
+                println("L: $L, n: $n, n_c: $n_c, ϵ_g: $ϵ_g, E_Y: $E_Y, SKR: $SKR")
+                push!(results_df, (L, n, n_c, ϵ_g, E_Y, SKR))
+                sort!(results_df, [:L, :n, :n_c, :ϵ_g])
+                CSV.write("./results/results3.csv", results_df)
+            end
+        end
     end
 end
 

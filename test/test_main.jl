@@ -5,8 +5,9 @@ using Logging
 global_logger(ConsoleLogger(stdout, Logging.Info))
 # global_logger(NullLogger())
 
-include("../src/network.jl")
-import .QuantumNetwork
+# include("../src/network.jl")
+# import .QuantumNetwork
+import QuantumNetwork
 
 n = 512   # Number of segments
 q = 1024    # Number of qubits
