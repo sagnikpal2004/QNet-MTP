@@ -1,6 +1,6 @@
 import QuantumInterface
 import QuantumOptics
-import Printf
+# import Printf
 
 basis1 = QuantumInterface.SpinBasis(1//2)
 basis2 = QuantumOptics.:⊗(basis1, basis1)
@@ -39,7 +39,7 @@ BellState(state::QuantumOptics.Ket) = BellState(QuantumInterface.dm(state))
 BellState(ref::QuantumSavory.RegRef) = BellState(ref.reg.staterefs[ref.idx].state[])
 
 Base.isapprox(s1::BellState, s2::BellState; atol=1e-8) = all(isapprox(getfield(s1, f), getfield(s2, f); atol=atol) for f in fieldnames(BellState))
-Base.show(io::IO, bs::BellState) = Printf.@printf(io, "BellState(%.8f, %.8f, %.8f, %.8f)", bs.a, bs.b, bs.c, bs.d)
+# Base.show(io::IO, bs::BellState) = Printf.@printf(io, "BellState(%.8f, %.8f, %.8f, %.8f)", bs.a, bs.b, bs.c, bs.d)
 
 function noisybell(F::Float64)
     return BellState(F, (1-F)/3, (1-F)/3, (1-F)/3)
