@@ -1,4 +1,4 @@
-include("../noisyops/CircuitZoo.jl")
+
 
 
 """Performs an entanglement swap between two qubits in the Network"""

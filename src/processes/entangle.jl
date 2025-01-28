@@ -1,7 +1,3 @@
-import QuantumSavory
-include("../utils/bellStates.jl")
-
-
 """Returns a noisy state with fidelity F"""
 function noisy_initstate(F::Float64)
     @assert 0 <= F <= 1

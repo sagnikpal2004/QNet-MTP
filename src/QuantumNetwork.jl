@@ -1,5 +1,9 @@
 module QuantumNetwork
-    import QuantumSavory
+    using QuantumSavory
+    using QuantumOptics
+    using QuantumOpticsBase
+    using QuantumSymbolics
+    using QuantumInterface
     using Logging
 
     """Defines a node in the Quantum Network"""
@@ -81,8 +85,9 @@ module QuantumNetwork
 
 
     include("./utils/bellStates.jl")
-    include("./baseops/uptotime.jl")
     include("./utils/network.jl")
+    include("./baseops/uptotime.jl")
+    include("./noisyops/CircuitZoo.jl")
     
     include("./processes/purify.jl")
     include("./processes/entangle.jl")

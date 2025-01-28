@@ -1,11 +1,3 @@
-import QuantumSavory
-import QuantumOptics
-import QuantumOpticsBase
-import QuantumSymbolics
-import QuantumInterface
-# import QuantumClifford
-
-
 function noise(state::QuantumOptics.Operator, indices)
     mixed_state = QuantumSymbolics.express(QuantumSavory.IdentityOp(QuantumOptics.basis(state)) / length(QuantumOptics.basis(state)))
 
@@ -88,7 +80,7 @@ function apply!(regs::Vector{QuantumSavory.Register}, indices::Base.AbstractVecO
         time<max_time && error("The simulation was commanded to apply $(operation) at time t=$(time) although the current simulation time is higher at t=$(max_time). Consider using locks around the offending operations.")
         max_time = time
     end
-    QuantumSavory.uptotime!(regs, indices, max_time)
+    uptotime!(regs, indices, max_time)
     QuantumSavory.subsystemcompose(regs,indices)
     state = regs[1].staterefs[indices[1]].state[]
     state_indices = [r.stateindices[i] for (r,i) in zip(regs, indices)]
