@@ -111,7 +111,7 @@ module QuantumNetwork
         return E_Y, SKR
     end
 
-    function simulate!(N::Network)
+    function simulate!(N::Network, PLOT::Bool=false)
         @info "Simulating with $(N.param)"
 
         QuantumNetwork.entangle!(N)
