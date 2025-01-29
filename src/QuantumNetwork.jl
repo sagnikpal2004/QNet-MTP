@@ -86,7 +86,7 @@ module QuantumNetwork
             swapcircuit = EntanglementSwap(p.ϵ_g, p.ξ)
             purifycircuit = DEJMPSProtocol(p.ϵ_g, p.ξ)
 
-            new(p, nodes, ent_list, swapcircuit, purifycircuit)
+            new(p, 0.0, nodes, ent_list, swapcircuit, purifycircuit)
         end
     end
     function Network(n::Int64, q::Int64; T2::Float64, F::Float64, p_ent::Float64, ϵ_g::Float64, ξ::Float64, t_comms::Vector{Float64})
