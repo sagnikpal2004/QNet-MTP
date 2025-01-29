@@ -1,10 +1,14 @@
 module QuantumNetwork
+    # __precompile__()
+
     using QuantumSavory
     using QuantumOptics
     using QuantumOpticsBase
     using QuantumSymbolics
     using QuantumInterface
+
     using Logging
+    include("./noisyops/CircuitZoo.jl")
 
     """Defines a node in the Quantum Network"""
     mutable struct Node
@@ -60,12 +64,15 @@ module QuantumNetwork
     end
 
     """Defines a Quantum Network with Alice & Bob and Repeaters in between"""
-    mutable struct Network
+    struct Network
         param::NetworkParam
 
         curTime::Float64        
         nodes::Vector{Node}
         ent_list::Dict{QuantumSavory.RegRef, QuantumSavory.RegRef}
+
+        swapcircuit::EntanglementSwap
+        purifycircuit::DEJMPSProtocol
 
         function Network(p::NetworkParam)
             nodes = Vector{Node}()
@@ -74,9 +81,12 @@ module QuantumNetwork
                 push!(nodes, Node(:Repeater, p.q; p.T2))
             end
             push!(nodes, Node(:Bob, p.q; p.T2))
-        
             ent_list = Dict{QuantumSavory.RegRef, QuantumSavory.RegRef}()
-            new(p, 0.0, nodes, ent_list)
+
+            swapcircuit = EntanglementSwap(p.ϵ_g, p.ξ)
+            purifycircuit = DEJMPSProtocol(p.ϵ_g, p.ξ)
+
+            new(p, nodes, ent_list, swapcircuit, purifycircuit)
         end
     end
     function Network(n::Int64, q::Int64; T2::Float64, F::Float64, p_ent::Float64, ϵ_g::Float64, ξ::Float64, t_comms::Vector{Float64})
@@ -87,7 +97,6 @@ module QuantumNetwork
     include("./utils/bellStates.jl")
     include("./utils/network.jl")
     include("./baseops/uptotime.jl")
-    include("./noisyops/CircuitZoo.jl")
     
     include("./processes/purify.jl")
     include("./processes/entangle.jl")

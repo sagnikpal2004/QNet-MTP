@@ -1,11 +1,12 @@
-# import Random
-# Random.seed!(22)
+import Random
+Random.seed!(22)
 
 using Logging
-global_logger(ConsoleLogger(stdout, Logging.Info))
-# global_logger(NullLogger())
+# global_logger(ConsoleLogger(stdout, Logging.Info))
+global_logger(NullLogger())
 
-import QuantumNetwork
+include("../src/QuantumNetwork.jl")
+import .QuantumNetwork
 
 n = 512   # Number of segments
 q = 1024    # Number of qubits
@@ -33,7 +34,5 @@ PLOT = false
 PURIFY = true
 
 net_param = QuantumNetwork.NetworkParam(n-1, q; T2, F, p_ent, ϵ_g, ξ, t_comms)
-# @time begin
-    E_Y, SKR = QuantumNetwork.simulate(net_param, 1)
-# end
+E_Y, SKR = QuantumNetwork.simulate(net_param, 1)
 println("SKR: $SKR")

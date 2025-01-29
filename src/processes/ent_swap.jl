@@ -1,9 +1,6 @@
-
-
-
 """Performs an entanglement swap between two qubits in the Network"""
 function ent_swap!(N::Network, remoteL::RegRef, localL::RegRef, localR::RegRef, remoteR::RegRef)
-    EntanglementSwap(N.param.ϵ_g, N.param.ξ)(localL, remoteL, localR, remoteR)
+    N.swapcircuit(localL, remoteL, localR, remoteR)
 
     N.ent_list[remoteL] = remoteR
     N.ent_list[remoteR] = remoteL
@@ -49,7 +46,7 @@ function ent_swap!(N::Network)
     n = N.param.n
 
     for i in 1:log(2, n+1)
-        for j in 1:n+1
+        for j in 1:n+1          # Implement multi-threading (after thread safety)
             if j % 2^i == (2^i)/2
                 QuantumNetwork.ent_swap!(N, j+1)
             end

@@ -60,7 +60,7 @@ for n_c in n_c_values
                 println("L: $L, n: $n, n_c: $n_c, ϵ_g: $ϵ_g, E_Y: $E_Y, SKR: $SKR")
                 push!(results_df, (L, n, n_c, ϵ_g, E_Y, SKR))
                 sort!(results_df, [:L, :n, :n_c, :ϵ_g])
-                CSV.write("./results/results3.csv", results_df)
+                CSV.write("./simulate/results/results3.csv", results_df)
             end
         end
     end

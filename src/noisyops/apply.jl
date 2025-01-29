@@ -57,12 +57,6 @@ end
 function apply!(regs::Vector{QuantumSavory.Register}, indices::Base.AbstractVecOrTuple{Int}, operation::QuantumSymbolics.Symbolic{QuantumInterface.AbstractSuperOperator}; time=nothing, ϵ_g::Float64=0.0)
     invoke(apply!, Tuple{Vector{QuantumSavory.Register}, Base.AbstractVecOrTuple{Int}, Any}, regs, indices, operation; time, ϵ_g)
 end
-# function apply!(r::QuantumClifford.Register, indices::Base.AbstractVecOrTuple{Int}, operation::QuantumSymbolics.Symbolic{QuantumInterface.AbstractOperator}; time=nothing)
-#     invoke(apply!, Tuple{QuantumClifford.Register, Base.AbstractVecOrTuple{Int}, Any}, r, indices, operation; time)
-# end
-# function apply!(r::QuantumClifford.Register, indices::Base.AbstractVecOrTuple{Int}, operation::QuantumSymbolics.Symbolic{QuantumInterface.AbstractSuperOperator}; time=nothing)
-#     invoke(apply!, Tuple{QuantumClifford.Register, Base.AbstractVecOrTuple{Int}, Any}, r, indices, operation; time)
-# end
 
 
 """
@@ -80,7 +74,7 @@ function apply!(regs::Vector{QuantumSavory.Register}, indices::Base.AbstractVecO
         time<max_time && error("The simulation was commanded to apply $(operation) at time t=$(time) although the current simulation time is higher at t=$(max_time). Consider using locks around the offending operations.")
         max_time = time
     end
-    uptotime!(regs, indices, max_time)
+    QuantumSavory.uptotime!(regs, indices, max_time)
     QuantumSavory.subsystemcompose(regs,indices)
     state = regs[1].staterefs[indices[1]].state[]
     state_indices = [r.stateindices[i] for (r,i) in zip(regs, indices)]

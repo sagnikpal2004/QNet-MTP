@@ -1,7 +1,7 @@
 """Updates the time of a register"""
 function uptotime!(reg::QuantumSavory.Register, t::Float64)
     for i in 1:length(reg.traits)
-        uptotime!(reg[i], t)
+        QuantumSavory.uptotime!(reg[i], t)
     end
 end
 
