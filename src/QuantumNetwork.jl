@@ -64,7 +64,7 @@ module QuantumNetwork
     end
 
     """Defines a Quantum Network with Alice & Bob and Repeaters in between"""
-    struct Network
+    mutable struct Network      # mutable due to curTime
         param::NetworkParam
 
         curTime::Float64        

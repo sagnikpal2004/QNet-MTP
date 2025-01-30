@@ -13,11 +13,11 @@ q = 1024    # Number of qubits
 
 T2 = 1.0   # T2 dephasing time in seconds
 
-n_c = 0.3
+η_c = 0.3
 L = 10^4 * 1000        
 l0 = L / n         # Internode distance in metres
 l_att = 20000     # Attenuation length in metres
-p_ent = 0.5 * n_c^2 * exp(-l0/l_att)   # Entanglement generation probability
+p_ent = 0.5 * η_c^2 * exp(-l0/l_att)   # Entanglement generation probability
 
 ϵ_g = 0.0001          # Gate error rate
 ξ = 0.25ϵ_g          # Measurement error rate
