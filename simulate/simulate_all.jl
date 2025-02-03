@@ -1,4 +1,4 @@
-using SQLite
+using SQLite, DataFrames
 db = SQLite.DB("./simulate/results/results3.db")
 
 L_values = [10^i * 1000 for i in 1:0.25:4]
@@ -19,7 +19,8 @@ for η_c in η_c_values
                     continue
                 end
 
-                run("sbatch -c 2 --mem 16G -t 05:00:00 --wrap=\"julia --project=simulate --threads=auto simulate/simulate.jl $L $n $η_c $ϵ_g\"")
+                run(`sbatch -c 2 --mem 16G -t 05:00:00 --wrap="julia --project=simulate --threads=auto simulate/simulate.jl $L $n $η_c $ϵ_g"`)
+                println("Started worker for L = $L, n = $n, η_c = $η_c, ϵ_g = $ϵ_g")
             end
         end
     end
