@@ -28,11 +28,11 @@ PLOT = false
 PURIFY = true
 
 net_param = QuantumNetwork.NetworkParam(n-1, q; T2, F, p_ent, ϵ_g, ξ, t_comms)
-E_Y, SKR = QuantumNetwork.simulate(net_param, 100)
+E_Y, SKR = QuantumNetwork.simulate(net_param, 1000)
 
 
 using SQLite
-db = SQLite.DB("./simulate/results/results3.db")
+db = SQLite.DB("./simulate/results/results4.db")
 
 SQLite.execute(db, """
     INSERT INTO "QNet-MTP" (L, n, η_c, ϵ_g, E_Y, SKR) 

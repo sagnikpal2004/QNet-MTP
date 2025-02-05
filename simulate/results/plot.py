@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 η_c_values = [1.0, 0.9, 0.5, 0.3]
 ϵ_g_values = [0.0001, 0.001]
 
-conn = sqlite3.connect("./simulate/results/results3.db")
+conn = sqlite3.connect("./simulate/results/results4.db")
 df = pd.read_sql_query("SELECT * FROM \"QNet-MTP\"", conn).sort_values(by=["ϵ_g", "η_c", "n", "L"])
 
 print(df)
@@ -28,5 +28,5 @@ for i, ϵ_g in enumerate(ϵ_g_values):
 
 plt.tight_layout(rect=[0.03, 0.03, 1, 0.95])
 
-plt.savefig("./simulate/results/results3.png")
+plt.savefig("./simulate/results/results4.png")
 print("File saved.")
