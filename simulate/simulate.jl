@@ -12,6 +12,9 @@ n = parse(Int64, ARGS[2])
 using Random
 Random.seed!(22)
 
+using Logging
+global_logger(NullLogger())
+
 using QuantumNetwork
 
 q = 1024
