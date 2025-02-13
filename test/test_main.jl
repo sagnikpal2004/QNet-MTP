@@ -2,13 +2,13 @@ import Random
 Random.seed!(22)
 
 using Logging
-# global_logger(ConsoleLogger(stdout, Logging.Info))
-global_logger(NullLogger())
+global_logger(ConsoleLogger(stdout, Logging.Info))
+# global_logger(NullLogger())
 
 include("../src/QuantumNetwork.jl")
 import .QuantumNetwork
 
-n = 512   # Number of segments
+n = 128   # Number of segments
 q = 1024    # Number of qubits
 
 T2 = 1.0   # T2 dephasing time in seconds
@@ -19,7 +19,7 @@ l0 = L / n         # Internode distance in metres
 l_att = 20000     # Attenuation length in metres
 p_ent = 0.5 * η_c^2 * exp(-l0/l_att)   # Entanglement generation probability
 
-ϵ_g = 0.0001          # Gate error rate
+ϵ_g = 0.001          # Gate error rate
 ξ = 0.25ϵ_g          # Measurement error rate
 F = 1 - 1.25ϵ_g   # Initial bellpair fidelity
 

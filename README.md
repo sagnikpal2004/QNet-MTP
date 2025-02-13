@@ -22,3 +22,23 @@ Using Distributed.jl - read this
 - Check Stefan's secure key implementation
 
 - Gate time later
+
+
+
+
+
+
+
+
+
+## New TODO
+- Generate the plots in julia
+- Look into missing n=128 in bottom row of graphs
+- Get more data points across the board
+- Find the bounties
+
+- Plot differences between values I have, and values Prateek has
+- Error bars for each data point
+
+- Start writing a Latex paper
+- Start working on presentation (perhaps with animation) (perhaps a QuantumSavory tutorial)
