@@ -88,9 +88,11 @@ function getQBER(N::Network)
     Q_z_lst::Vector{Float64} = []
 
     for (q1, q2) in N.ent_list
-        ρ = BellState(q1)
-        push!(Q_x_lst, ρ.b + ρ.d)
-        push!(Q_z_lst, ρ.c + ρ.d)
+        if (q1.reg == N.nodes[1].right && q2.reg == N.nodes[end].left)
+            ρ = BellState(q1)
+            push!(Q_x_lst, ρ.b + ρ.d)
+            push!(Q_z_lst, ρ.c + ρ.d)
+        end
     end
 
     Q_x = sum(Q_x_lst) / length(Q_x_lst)
@@ -98,13 +100,16 @@ function getQBER(N::Network)
     return Q_x, Q_z
 end
 
-function r_secure(Q_x::Float64, Q_y::Float64)
+function r_secure(Q_x::Float64, Q_z::Float64)
     # @assert N.nodes[1].connectedTo_R == N.nodes[end] "Alice must be connected to Bob"
     @assert 0 <= Q_x <= 1 "Q_x must be in [0, 1]"
-    @assert 0 <= Q_y <= 1 "Q_y must be in [0, 1]"
+    @assert 0 <= Q_z <= 1 "Q_z must be in [0, 1]"
     
     h_x = (-Q_x * log2(Q_x)) - ((1 - Q_x) * log2(1 - Q_x)); h_x = isnan(h_x) ? 0 : h_x
-    h_y = (-Q_y * log2(Q_y)) - ((1 - Q_y) * log2(1 - Q_y)); h_y = isnan(h_y) ? 0 : h_y
+    h_y = (-Q_z * log2(Q_z)) - ((1 - Q_z) * log2(1 - Q_z)); h_y = isnan(h_y) ? 0 : h_y
+    # println("h_x: $h_x, h_y: $h_y")
+
+    # println(1 - h_x - h_y)
     return max(1 - h_x - h_y, 0)
 end
 r_secure(N::Network) = r_secure(getQBER(N)...)

@@ -74,6 +74,8 @@ module QuantumNetwork
         swapcircuit::EntanglementSwap
         purifycircuit::DEJMPSProtocol
 
+        purified::Bool
+
         function Network(p::NetworkParam)
             nodes = Vector{Node}()
             push!(nodes, Node(:Alice, p.q; p.T2))
@@ -86,7 +88,7 @@ module QuantumNetwork
             swapcircuit = EntanglementSwap(p.ϵ_g, p.ξ)
             purifycircuit = DEJMPSProtocol(p.ϵ_g, p.ξ)
 
-            new(p, 0.0, nodes, ent_list, swapcircuit, purifycircuit)
+            new(p, 0.0, nodes, ent_list, swapcircuit, purifycircuit, false)
         end
     end
     function Network(n::Int64, q::Int64; T2::Float64, F::Float64, p_ent::Float64, ϵ_g::Float64, ξ::Float64, t_comms::Vector{Float64})
@@ -105,23 +107,27 @@ module QuantumNetwork
     function simulate(p::NetworkParam, shots::Int64)
         Y = Vector{Int64}(undef, shots)
         Q_x_lst = Vector{Float64}(undef, shots)
-        Q_y_lst = Vector{Float64}(undef, shots)
+        Q_z_lst = Vector{Float64}(undef, shots)
 
         Threads.@threads for i in 1:shots
             N = Network(p.n, p.q; p.T2, p.F, p.p_ent, p.ϵ_g, p.ξ, p.t_comms)
-            y, (Q_x, Q_y) = simulate!(N)
+            y, (Q_x, Q_z) = simulate!(N)
 
             Y[i] = y
             Q_x_lst[i] = Q_x
-            Q_y_lst[i] = Q_y
+            Q_z_lst[i] = Q_z
+
+            # println("Shot $i: $y, Q_x: $Q_x, Q_z: $Q_z, fidelity: $(getFidelity(N))")
         end
 
         M = p.q
         E_Y = sum(Y) / shots
         Q_x = sum(Q_x_lst) / shots
-        Q_y = sum(Q_y_lst) / shots
+        Q_z = sum(Q_z_lst) / shots
 
-        SKR = E_Y * r_secure(Q_x, Q_y) / M
+        # println("E_Y: $E_Y, Q_x: $Q_x, Q_z: $Q_z")
+
+        SKR = E_Y * r_secure(Q_x, Q_z) / M
         return E_Y, SKR
     end
 
@@ -133,8 +139,8 @@ module QuantumNetwork
         
         @info ""
         y = length(N.ent_list) / 2
-        Q_x, Q_y = QuantumNetwork.getQBER(N)
-        return y, (Q_x, Q_y)
+        Q_x, Q_z = QuantumNetwork.getQBER(N)
+        return y, (Q_x, Q_z)
     end
     
 end
