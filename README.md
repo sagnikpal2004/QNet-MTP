@@ -42,3 +42,17 @@ Using Distributed.jl - read this
 
 - Start writing a Latex paper
 - Start working on presentation (perhaps with animation) (perhaps a QuantumSavory tutorial)
+
+
+- Check standard deviations/errors and error bars
+- Use same distances
+- Change Q_x and Q_z to not be average of averages - calculate across all shots
+
+- Create the video for Don
+- Difference plots
+
+
+-next steps
+-memory resident time
+connectionless architecture
+-classical comm time
