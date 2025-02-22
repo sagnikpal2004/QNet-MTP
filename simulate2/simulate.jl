@@ -30,13 +30,13 @@ L_values = vcat(
 )
 n_values = [2^i for i in 1:1:(ϵ_g == 0.001 ? 7 : 9)]
 
-using SQLite
+using SQLite, DataFrames
 filepath = "./simulate2/results/gateerror_$(ϵ_g)_etac_$(η_c).db"
 
 db = SQLite.DB(filepath)
 SQLite.execute(db, """
     CREATE TABLE IF NOT EXISTS results (
-        L INTEGER,
+        L REAL,
         n INTEGER,
         shot INTEGER,
         y INTEGER,
@@ -52,18 +52,18 @@ for L in L_values
         p_ent = 0.5 * η_c^2 * exp(-l0/l_att)
         t_comms = fill(l0 / c, n)
 
-        net_param = NetworkParam(n, q; T2, F, p_ent, ϵ_g, ξ, t_comms)
+        net_param = QuantumNetwork.NetworkParam(n-1, q; T2, F, p_ent, ϵ_g, ξ, t_comms)
 
         Threads.@threads for shot in 1:1024
             db = SQLite.DB(filepath)
-            SQLite.execute(db, "SELECT COUNT(*) FROM results WHERE L = $L AND n = $n AND shot = $shot") |> DataFrame
+            result = SQLite.execute(db, "SELECT COUNT(*) FROM results WHERE L = $L AND n = $n AND shot = $shot")
             if result[1, 1] > 0
                 continue
             end
             SQLite.close(db)
 
-            network = Network(net_param; rng=Xoshiro(shot))
-            y, (Q_x, Q_z) = simulate!(network)
+            network = QuantumNetwork.Network(net_param; rng=Xoshiro(shot))
+            y, (Q_x, Q_z) = QuantumNetwork.simulate!(network)
             
             db = SQLite.DB(filepath)
             SQLite.execute(db, "INSERT INTO results (L, n, shot, y, Q_x, Q_z) VALUES (?, ?, ?, ?, ?, ?)", L, n, shot, y, Q_x, Q_z)
