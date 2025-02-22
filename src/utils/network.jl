@@ -80,23 +80,23 @@ end
 
 
 function getQBER(N::Network)
-    if length(N.ent_list) == 0
+    y = length(N.ent_list) ÷ 2
+    if y == 0
         return 1.0, 1.0
     end
 
-    Q_x_lst::Vector{Float64} = []
-    Q_z_lst::Vector{Float64} = []
-
+    Q_x_sum = 0.0
+    Q_z_sum = 0.0
     for (q1, q2) in N.ent_list
         if (q1.reg == N.nodes[1].right && q2.reg == N.nodes[end].left)
             ρ = BellState(q1)
-            push!(Q_x_lst, ρ.b + ρ.d)
-            push!(Q_z_lst, ρ.c + ρ.d)
+            Q_x_sum += ρ.b + ρ.d
+            Q_z_sum += ρ.c + ρ.d
         end
     end
 
-    Q_x = sum(Q_x_lst) / length(Q_x_lst)
-    Q_z = sum(Q_z_lst) / length(Q_z_lst)
+    Q_x = Q_x_sum / y
+    Q_z = Q_z_sum / y
     return Q_x, Q_z
 end
 
