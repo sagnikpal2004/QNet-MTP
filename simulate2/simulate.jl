@@ -3,8 +3,8 @@ if length(ARGS) != 2
     exit(1)
 end
 
-η_c = parse(Float64, ARGS[3])
-ϵ_g = parse(Float64, ARGS[4])
+η_c = parse(Float64, ARGS[1])
+ϵ_g = parse(Float64, ARGS[2])
 
 using Random
 using Logging
