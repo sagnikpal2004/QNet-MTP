@@ -46,6 +46,8 @@ SQLite.execute(db, """
 """)
 SQLite.close(db)
 
+db_lock = ReentrantLock()
+
 for L in L_values
     for n in n_values
         l0 = L / n
@@ -65,9 +67,11 @@ for L in L_values
             network = QuantumNetwork.Network(net_param; rng=Xoshiro(shot))
             y, (Q_x, Q_z) = QuantumNetwork.simulate!(network)
             
-            db = SQLite.DB(filepath)
-            SQLite.execute(db, "INSERT INTO results (L, n, shot, y, Q_x, Q_z) VALUES (?, ?, ?, ?, ?, ?)", L, n, shot, y, Q_x, Q_z)
-            SQLite.close(db)
+            lock(db_lock) do
+                db = SQLite.DB(filepath)
+                SQLite.execute(db, "INSERT INTO results (L, n, shot, y, Q_x, Q_z) VALUES (?, ?, ?, ?, ?, ?)", L, n, shot, y, Q_x, Q_z)
+                SQLite.close(db)
+            end
         end
     end
 end
