@@ -13,9 +13,9 @@ The Hilbert space of the register is automatically shrunk.
 A basis object can be specified on its own as well, e.g.
 `project_traceout!(reg, slot, basis; ξ)`.
 """
-function project_traceout!(r::QuantumSavory.RegRef, basis; time=nothing, ξ::Float64=0.0)
+function project_traceout!(r::QuantumSavory.RegRef, basis; time=nothing, ξ::Float64=0.0, rng::AbstractRNG=Random.GLOBAL_RNG)
     result = QuantumSavory.project_traceout!(r, basis; time=time)
-    if rand() < ξ
+    if rand(rng) < ξ
         result = (result % 2) + 1
     end
     return result

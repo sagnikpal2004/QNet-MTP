@@ -7,18 +7,19 @@ include("../baseops/RGate.jl")
 struct EntanglementSwap <: QuantumSavory.CircuitZoo.AbstractCircuit
     ϵ_g::Float64
     ξ::Float64
+    rng::AbstractRNG
 
-    function EntanglementSwap(ϵ_g::Float64, ξ::Float64)
+    function EntanglementSwap(ϵ_g::Float64, ξ::Float64, rng::AbstractRNG=Random.GLOBAL_RNG)
         @assert 0 <= ϵ_g <= 1   "ϵ_g must be in [0, 1]"
         @assert 0 <=  ξ  <= 1   "ξ must be in [0, 1]"
 
-        new(ϵ_g, ξ)
+        new(ϵ_g, ξ, rng)
     end
 end
 function (circuit::EntanglementSwap)(localL, remoteL, localR, remoteR)
     apply!((localL, localR), QuantumSavory.CNOT; ϵ_g=circuit.ϵ_g)
-    xmeas = project_traceout!(localL, QuantumSavory.σˣ; ξ=circuit.ξ)
-    zmeas = project_traceout!(localR, QuantumSavory.σᶻ; ξ=circuit.ξ)
+    xmeas = project_traceout!(localL, QuantumSavory.σˣ; ξ=circuit.ξ, rng=circuit.rng)
+    zmeas = project_traceout!(localR, QuantumSavory.σᶻ; ξ=circuit.ξ, rng=circuit.rng)
     if xmeas==2
         QuantumSavory.apply!(remoteL, QuantumSavory.Z)
     end

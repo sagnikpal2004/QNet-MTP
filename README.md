@@ -45,11 +45,11 @@ Using Distributed.jl - read this
 
 
 - Check standard deviations/errors and error bars
-- Use same distances
-- Change Q_x and Q_z to not be average of averages - calculate across all shots
 
 - Create the video for Don
 - Difference plots
+
+- DO REPROCIBILITY ERROR FIX LATER
 
 
 -next steps
