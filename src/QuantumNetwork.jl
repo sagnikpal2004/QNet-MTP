@@ -93,9 +93,9 @@ module QuantumNetwork
             new(p, rng, 0.0, nodes, ent_list, swapcircuit, purifycircuit, false)
         end
     end
-    function Network(n::Int64, q::Int64; T2::Float64, F::Float64, p_ent::Float64, ϵ_g::Float64, ξ::Float64, t_comms::Vector{Float64})
-        return Network(NetworkParam(n, q; T2, F, p_ent, ϵ_g, ξ, t_comms))
-    end
+    # function Network(n::Int64, q::Int64; T2::Float64, F::Float64, p_ent::Float64, ϵ_g::Float64, ξ::Float64, t_comms::Vector{Float64}, rng=Random.GLOBAL_RNG)
+    #     return Network(NetworkParam(n, q; T2, F, p_ent, ϵ_g, ξ, t_comms); rng=rng)
+    # end
 
 
     include("./utils/bellStates.jl")

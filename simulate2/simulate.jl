@@ -34,7 +34,7 @@ using SQLite, DataFrames
 filepath = "./simulate2/results/gateerror_$(ϵ_g)_etac_$(η_c).db"
 
 db = SQLite.DB(filepath)
-SQLite.execute(db, """
+DBInterface.execute(db, """
     CREATE TABLE IF NOT EXISTS results (
         L REAL,
         n INTEGER,
@@ -44,7 +44,6 @@ SQLite.execute(db, """
         Q_z REAL
     )
 """)
-SQLite.close(db)
 
 db_lock = ReentrantLock()
 
@@ -57,20 +56,16 @@ for L in L_values
         net_param = QuantumNetwork.NetworkParam(n-1, q; T2, F, p_ent, ϵ_g, ξ, t_comms)
 
         Threads.@threads for shot in 1:1024
-            db = SQLite.DB(filepath)
-            result = SQLite.execute(db, "SELECT COUNT(*) FROM results WHERE L = $L AND n = $n AND shot = $shot")
+            result = DBInterface.execute(db, "SELECT COUNT(*) FROM results WHERE L = $L AND n = $n AND shot = $shot") |> DataFrame
             if result[1, 1] > 0
                 continue
             end
-            SQLite.close(db)
 
             network = QuantumNetwork.Network(net_param; rng=Xoshiro(shot))
             y, (Q_x, Q_z) = QuantumNetwork.simulate!(network)
             
             lock(db_lock) do
-                db = SQLite.DB(filepath)
-                SQLite.execute(db, "INSERT INTO results (L, n, shot, y, Q_x, Q_z) VALUES (?, ?, ?, ?, ?, ?)", L, n, shot, y, Q_x, Q_z)
-                SQLite.close(db)
+                DBInterface.execute(db, "INSERT INTO results (L, n, shot, y, Q_x, Q_z) VALUES ($L, $n, $shot, $y, $Q_x, $Q_z)")
             end
         end
     end
