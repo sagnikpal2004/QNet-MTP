@@ -1,4 +1,3 @@
 [deps]
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
-QuantumNetwork = "8930d352-ab06-47d7-82dc-3b155245940f"
 SQLite = "0aa819cd-b072-5ff4-a722-6bc24af294d9"
